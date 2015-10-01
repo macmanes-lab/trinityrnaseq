@@ -31,7 +31,7 @@ jellyfish:
 #	cd htslib-1.2.1 && ./configure && $(MAKE)
 #	tar xvf ${HTSLIB_CODE} && cd htslib && $(MAKE)
 
-scaffold_iworm_contigs_target: htslib_target
+scaffold_iworm_contigs_target:
 	cd scaffold_iworm_contigs && $(MAKE)
 
 fastool_target:
