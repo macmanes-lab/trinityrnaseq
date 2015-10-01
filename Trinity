@@ -47,6 +47,7 @@ my $COLLECTL_DIR = "$ROOTDIR/trinity-plugins/collectl/bin";
 my $PARAFLY = "$ROOTDIR/trinity-plugins/parafly/bin/ParaFly";
 my $TRIMMOMATIC = "$ROOTDIR/trinity-plugins/Trimmomatic/trimmomatic.jar";
 my $TRIMMOMATIC_DIR = "$ROOTDIR/trinity-plugins/Trimmomatic";
+my $BWA = "$ROOTDIR/trinity-plugins/bwa/bwa";
 
 $ENV{PATH} = "$ROOTDIR/trinity-plugins/BIN:$ENV{PATH}";
 
