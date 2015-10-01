@@ -197,6 +197,10 @@ my $NO_PARALLEL_IWORM = 0;
 ## Quality trimming params
 my $RUN_TRIMMOMATIC_FLAG = 0;
 my $trimmomatic_quality_trim_params = "ILLUMINACLIP:$TRIMMOMATIC_DIR/adapters/TruSeq3-PE.fa:2:30:10 SLIDINGWINDOW:4:5 LEADING:5 TRAILING:5 MINLEN:25";
+my $RUN_SKEWER_FLAG = 0;
+my $skewer_params = "-Q 2 -x $TRIMMOMATIC_DIR/adapters/TruSeq3-PE.fa:2:30:10 -l 25";
+
+
 
 ## Normalize reads
 my $NORMALIZE_READS_FLAG = 0;
@@ -599,6 +603,8 @@ my $NO_VERSION_CHECK = 0;
     # Quality trimming:
              'trimmomatic' => \$RUN_TRIMMOMATIC_FLAG,
              'quality_trimming_params=s' => \$trimmomatic_quality_trim_params,
+             'skewer' => \$RUN_SKEWER_FLAG,
+             'skewer_params=s' => \$skewer_params,
              
     # In silico read normalization
              'normalize_reads' => \$NORMALIZE_READS_FLAG,
@@ -1212,6 +1218,53 @@ main: {
         }
     }
     
+#################################################################################
+##########################
+    ##  Run Quality Trimming
+    ##########################
+    
+    if ($RUN_SKEWER_FLAG) {
+
+        print STDERR "---------------------------------------------------------------\n"
+                   . "------ Quality Trimming Via SKEWER  ---------------------\n"
+                   . "<< $skewer_params >>\n"
+                   . "---------------------------------------------------------------\n\n";
+
+
+        unless ($seqType eq 'fq') {
+            die "Error, cannot do quality trimming on fasta files, need fastq files.";
+        }
+        
+        if (@left_files && @right_files) {
+            my @trimmed_left_files;
+            my @trimmed_right_files;
+            
+            while (@left_files) {
+                my $left_file = shift @left_files;
+                my $right_file = shift @right_files;
+
+                # note: trimmomatic can use gzipped files directly.
+                my ($left_file_trimmed, $right_file_trimmed) = &run_trimmomatic_PE($left_file, $right_file, $trimmomatic_quality_trim_params);
+                push (@trimmed_left_files, $left_file_trimmed);
+                push (@trimmed_right_files, $right_file_trimmed);
+            }
+            
+            @left_files = @trimmed_left_files;
+            @right_files = @trimmed_right_files;
+        }
+        elsif (@single_files) {
+            my @trimmed_single_files;
+            foreach my $single_file (@single_files) {
+                my $trimmed_single_file = &run_trimmomatic_SE($single_file, $trimmomatic_quality_trim_params);
+                push (@trimmed_single_files, $trimmed_single_file);
+            }
+            @single_files = @trimmed_single_files;
+        }
+    }
+#################################################################################
+
+
+
     ##########################################
     ## In silico normalization
     ##########################################
