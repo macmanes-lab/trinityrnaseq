@@ -136,6 +136,7 @@ my $min_pct_read_mapping = 0;
 my $chrysalis_output_dir = "chrysalis";
 my $component_directory;
 my $NO_RUN_CHRYSALIS_FLAG = 0;
+my $YES_BWA = 0;
 
 my $NO_DISTRIBUTED_TRINITY_EXEC = 0;
 
@@ -1026,7 +1027,7 @@ else {
 if ($PAIRED_MODE && (!$NO_RUN_CHRYSALIS_FLAG)  && ($YES_BWA)) {
     ## be sure we can find 'bwa', since we use it as part of the iworm pair scaffolding step
     my $bwa_path = `which bwa`;
-    if ($bwa_path =~ /\w/ && $bwa =~ /\w/) {
+    if ($bwa_path =~ /\w/ && $bwa_path =~ /\w/) {
         print "Paired mode with BWA requires BWA. Found BWA at: $bwa_path \n\n" if $VERBOSE;
     }
     else {
