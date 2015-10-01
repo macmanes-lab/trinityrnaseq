@@ -1024,13 +1024,13 @@ else {
 }
 ##########################################################################
 if ($PAIRED_MODE && (!$NO_RUN_CHRYSALIS_FLAG)  && ($YES_BWA)) {
-    ## be sure we can find 'bowtie', since we use it as part of the iworm pair scaffolding step
-    my $bwa_path = `which bowtie`;
+    ## be sure we can find 'bwa', since we use it as part of the iworm pair scaffolding step
+    my $bwa_path = `which bwa`;
     if ($bwa_path =~ /\w/ && $bwa =~ /\w/) {
         print "Paired mode with BWA requires BWA. Found BWA at: $bwa_path \n\n" if $VERBOSE;
     }
     else {
-        die "Error, cannot find path to BWA ($bowtie_path) or bowtie-build ($bowtie_build_path), which is needed if you want to use BWA as part of Chrysalis' read scaffolding step.  If you should choose to not run BWA, don't include the --bwa in your Trinity command.\n\n";
+        die "Error, cannot find path to BWA ($bwa_path), which is needed if you want to use BWA as part of Chrysalis' read scaffolding step.  If you should choose to not run BWA, don't include the --bwa_yes in your Trinity command.\n\n";
     }
     
     my $samtools_path = `which samtools`;
