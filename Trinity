@@ -994,7 +994,7 @@ $ENV{OMP_NUM_THREADS} = $CPU; ## for Inchworm and Chrysalis
 
 
 my $PAIRED_MODE = ( (@left_files && @right_files)  || $run_as_paired_flag) ? 1:0;
-if ($PAIRED_MODE && (!$NO_RUN_CHRYSALIS_FLAG)  && (!$NO_BOWTIE)) {
+if ($PAIRED_MODE && (!$NO_RUN_CHRYSALIS_FLAG)  && (!$NO_BOWTIE) && (!$YES_BWA)) {
     ## be sure we can find 'bowtie', since we use it as part of the iworm pair scaffolding step
     my $bowtie_path = `which bowtie`;
     my $bowtie_build_path = `which bowtie-build`;
@@ -1559,7 +1559,7 @@ sub run_chrysalis {
     my $pair_links_file = "";
 
     ## Define iworm links via paired-end read mappings:
-    if ($PAIRED_MODE && ! $NO_BOWTIE) {
+    if ($PAIRED_MODE && ! $NO_BOWTIE && ! $YES_BWA) {
 
         my $pipeliner = new Pipeliner(-verbose => ($TRINITY_COMPLETE_FLAG) ? $VERBOSE : max(1, $VERBOSE));
         
