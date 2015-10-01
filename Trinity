@@ -88,7 +88,7 @@ $output_directory = &create_full_path("trinity_out_dir", 0);
 
 #  butterfly opts
 $min_contig_length = 200;
-$group_pairs_distance = 500;
+$group_pairs_distance = 700;
 my $path_reinforcement_distance;
 my $PE_path_reinforcement_distance = 75;
 my $SE_path_reinforcement_distance = 25;
@@ -645,6 +645,7 @@ my $NO_VERSION_CHECK = 0;
     'min_pct_read_mapping=i' => \$min_pct_read_mapping,
     'weldmer_size=i' => \$weldmer_size,
     "no_bowtie" => \$NO_BOWTIE,
+    "yes_bwa" => \$YES_BWA,
     "bowtie_comp" => \$BOWTIE_COMP,
     "no_run_chrysalis" => \$NO_RUN_CHRYSALIS_FLAG,
              
@@ -752,6 +753,7 @@ max_reads_per_loop
 min_pct_read_mapping
 weldmer_size
 no_bowtie
+yes_bwa
 bowtie_comp
 no_run_chrysalis
 grid_conf
@@ -1020,7 +1022,31 @@ else {
         $path_reinforcement_distance = $SE_path_reinforcement_distance;
     }
 }
+##########################################################################
+if ($PAIRED_MODE && (!$NO_RUN_CHRYSALIS_FLAG)  && ($YES_BWA)) {
+    ## be sure we can find 'bowtie', since we use it as part of the iworm pair scaffolding step
+    my $bwa_path = `which bowtie`;
+    if ($bwa_path =~ /\w/ && $bwa =~ /\w/) {
+        print "Paired mode with BWA requires BWA. Found BWA at: $bwa_path \n\n" if $VERBOSE;
+    }
+    else {
+        die "Error, cannot find path to BWA ($bowtie_path) or bowtie-build ($bowtie_build_path), which is needed if you want to use BWA as part of Chrysalis' read scaffolding step.  If you should choose to not run BWA, don't include the --bwa in your Trinity command.\n\n";
+    }
+    
+    my $samtools_path = `which samtools`;
+    if ($samtools_path =~ /\w/) {
+        print "Found samtools at: $samtools_path\n" if $VERBOSE;
+    }
+    else {
+        die "Error, cannot find samtools. Please be sure samtools is installed and included in your PATH setting.\n";
+    }
 
+    unless ($path_reinforcement_distance) {
+        $path_reinforcement_distance = $PE_path_reinforcement_distance;
+    }
+}
+
+##############################################################################
 
 my $MKDIR_OUTDIR_FLAG = 0; ## only purging output_directory if we create it in this run.
 
@@ -1282,7 +1308,7 @@ sub run_Trinity {
     
     my $trinity_target_fa = (@single_files) ? "single.fa" : "both.fa"; 
     my $inchworm_target_fa = $trinity_target_fa; # change this later if we have long_reads
-    my $bowtie_reads_fa = $trinity_target_fa; # dont include long reads in this... keep them separate.
+    my $mapping_reads_fa = $trinity_target_fa; # dont include long reads in this... keep them separate.
     
     ## Don't prep the inputs if Inchworm already exists.... Resuming earlier operations.
     my $inchworm_finished_checkpoint_file = "$inchworm_file.finished";
@@ -1473,7 +1499,7 @@ sub run_Trinity {
     $pm_chrysalis_start = `date +%s`;
     my $butterfly_cmds = &run_chrysalis($inchworm_file, $inchworm_target_fa,
                                         $min_contig_length, $group_pairs_distance, $SS_lib_type, 
-                                        $trinity_target_fa, $bowtie_reads_fa);
+                                        $trinity_target_fa, $mapping_reads_fa);
     $pm_chrysalis_end = `date +%s`;
     
 
@@ -1523,7 +1549,7 @@ sub run_Trinity {
 ####
 sub run_chrysalis {
     my ($inchworm_file, $reads_file,
-        $min_contig_length, $group_pairs_distance, $SS_lib_type, $pairs_fa, $bowtie_reads_fa) = @_;
+        $min_contig_length, $group_pairs_distance, $SS_lib_type, $pairs_fa, $mapping_reads_fa) = @_;
     
     
     my $butterfly_cmds = &create_full_path("$chrysalis_output_dir/butterfly_commands");
@@ -1554,21 +1580,21 @@ sub run_chrysalis {
         if (-s "$iworm_min100_fa_file") {
             $pipeliner->add_commands( new Command($cmd, "$iworm_min100_fa_file.bowtie_build.ok"));
 
-            my $bowtie_sam_file = "$chrysalis_output_dir/iworm.bowtie.nameSorted.bam";
+            my $mapping_sam_file = "$chrysalis_output_dir/iworm.bowtie.nameSorted.bam";
             if ($long_reads){
-            	$cmd = "bash -c \" set -o pipefail;bowtie2 --local -a --threads $CPU -f $iworm_min100_fa_file $bowtie_reads_fa  | samtools view $PARALLEL_SAMTOOLS_SORT_TOKEN -F4 -Sb - | samtools sort -m $max_memory $PARALLEL_SAMTOOLS_SORT_TOKEN -no - - > $bowtie_sam_file\" ";  
+            	$cmd = "bash -c \" set -o pipefail;bowtie2 --local -a --threads $CPU -f $iworm_min100_fa_file $mapping_reads_fa  | samtools view $PARALLEL_SAMTOOLS_SORT_TOKEN -F4 -Sb - | samtools sort -m $max_memory $PARALLEL_SAMTOOLS_SORT_TOKEN -no - - > $mapping_sam_file\" ";  
             }
             else{
-            	$cmd = "bash -c \" set -o pipefail; bowtie -a -m 20 --best --strata --threads $CPU  --chunkmbs 512 -q -S -f $iworm_min100_fa_file $bowtie_reads_fa  | samtools view $PARALLEL_SAMTOOLS_SORT_TOKEN -F4 -Sb - | samtools sort -m $max_memory $PARALLEL_SAMTOOLS_SORT_TOKEN -no - - > $bowtie_sam_file\" ";
+            	$cmd = "bash -c \" set -o pipefail; bowtie -a -m 20 --best --strata --threads $CPU  --chunkmbs 512 -q -S -f $iworm_min100_fa_file $mapping_reads_fa  | samtools view $PARALLEL_SAMTOOLS_SORT_TOKEN -F4 -Sb - | samtools sort -m $max_memory $PARALLEL_SAMTOOLS_SORT_TOKEN -no - - > $mapping_sam_file\" ";
             }
             
             
-            $pipeliner->add_commands( new Command($cmd, "$bowtie_sam_file.ok"));
+            $pipeliner->add_commands( new Command($cmd, "$mapping_sam_file.ok"));
             
             ## generate the scaffold info
             $ENV{'LD_LIBRARY_PATH'} .= ":$ROOTDIR/trinity-plugins/htslib";
             my $iworm_scaffolds_file = "$chrysalis_output_dir/iworm_scaffolds.txt";
-            $cmd = "$ROOTDIR/trinity-plugins/scaffold_iworm_contigs/scaffold_iworm_contigs $bowtie_sam_file $inchworm_file > $iworm_scaffolds_file"; # important, must use original inchworm file because positions are indexed for later use by GraphFromFasta
+            $cmd = "$ROOTDIR/trinity-plugins/scaffold_iworm_contigs/scaffold_iworm_contigs $mapping_sam_file $inchworm_file > $iworm_scaffolds_file"; # important, must use original inchworm file because positions are indexed for later use by GraphFromFasta
             
             $pipeliner->add_commands( new Command($cmd, "$iworm_scaffolds_file.ok"));
             
@@ -1579,7 +1605,51 @@ sub run_chrysalis {
         }
     }
     
-    
+######################################################################################################################################################################
+    ## Define iworm links via paired-end read mappings:
+    if ($PAIRED_MODE && $YES_BWA) {
+
+        my $pipeliner = new Pipeliner(-verbose => ($TRINITY_COMPLETE_FLAG) ? $VERBOSE : max(1, $VERBOSE));
+        
+        # generate the pair links.
+        my $iworm_min100_fa_file = "$chrysalis_output_dir/" . basename("$inchworm_file.min100");
+        my $cmd = "$MISCDIR/fasta_filter_by_min_length.pl $inchworm_file 100 > $iworm_min100_fa_file";
+        $pipeliner->add_commands( new Command($cmd, "$iworm_min100_fa_file.ok"));
+        $pipeliner->run();
+        
+        $pipeliner = new Pipeliner(-verbose => $VERBOSE);
+        if($long_reads){
+            $cmd = "bwa index -p $iworm_min100_fa_file $iworm_min100_fa_file"; #-o 3 / defaut is 5, less use more ram but is faster when mapping the reads
+        }
+        
+        if (-s "$iworm_min100_fa_file") {
+            $pipeliner->add_commands( new Command($cmd, "$iworm_min100_fa_file.bwa_build.ok"));
+
+            my $mapping_sam_file = "$chrysalis_output_dir/iworm.bwa.nameSorted.bam";
+            if ($long_reads){
+            	$cmd = "bash -c \" set -o pipefail;bwa mem -p --t $CPU -f $iworm_min100_fa_file $mapping_reads_fa  | samtools view  -T . -bu - | samtools sort -l 0 -O bam -T tmp -@ $PARALLEL_SAMTOOLS_SORT_TOKEN -m $max_memory -o $mapping_sam_file-\" ";  
+            }
+            else{
+            	$cmd = "bash -c \" set -o pipefail;bwa mem -p --t $CPU -f $iworm_min100_fa_file $mapping_reads_fa  | samtools view  -T . -bu - | samtools sort -l 0 -O bam -T tmp -@ $PARALLEL_SAMTOOLS_SORT_TOKEN -m $max_memory -o $mapping_sam_file-\" ";  
+            }
+                        
+            $pipeliner->add_commands( new Command($cmd, "$mapping_sam_file.ok"));
+            
+            ## generate the scaffold info
+            $ENV{'LD_LIBRARY_PATH'} .= ":$ROOTDIR/trinity-plugins/htslib";
+            my $iworm_scaffolds_file = "$chrysalis_output_dir/iworm_scaffolds.txt";
+            $cmd = "$ROOTDIR/trinity-plugins/scaffold_iworm_contigs/scaffold_iworm_contigs $mapping_sam_file $inchworm_file > $iworm_scaffolds_file"; # important, must use original inchworm file because positions are indexed for later use by GraphFromFasta
+            
+            $pipeliner->add_commands( new Command($cmd, "$iworm_scaffolds_file.ok"));
+            
+            $pair_links_file = $iworm_scaffolds_file;
+            
+            $pipeliner->run();
+            
+        }
+    }
+######################################################################################################################################################################
+
     
     my $chrysalis_pipeliner = new Pipeliner(-verbose => ($TRINITY_COMPLETE_FLAG) ? $VERBOSE : max(1, $VERBOSE));
     
