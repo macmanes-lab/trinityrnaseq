@@ -649,6 +649,8 @@ my $NO_VERSION_CHECK = 0;
     "yes_bwa" => \$YES_BWA,
     "bowtie_comp" => \$BOWTIE_COMP,
     "no_run_chrysalis" => \$NO_RUN_CHRYSALIS_FLAG,
+    "bwa" => \$YES_BWA,
+
              
     # Grid computing options
     'grid_conf=s' => \$grid_conf_file,         
@@ -755,6 +757,7 @@ min_pct_read_mapping
 weldmer_size
 no_bowtie
 yes_bwa
+bwa
 bowtie_comp
 no_run_chrysalis
 grid_conf
