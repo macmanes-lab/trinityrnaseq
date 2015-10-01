@@ -318,6 +318,8 @@ my $full_usage = qq^
 #  --min_glue <int>               :min number of reads needed to glue two inchworm contigs
 #                                  together. (default: $min_glue) 
 #
+#  --bwa                          :run BWA MEM in all mapping steps.
+#
 #  --no_bowtie                    :dont run bowtie to use pair info in chrysalis clustering.
 #
 #  --no_run_chrysalis             :stop after running inchworm, before chrysalis. (phase 1, read clustering only)
