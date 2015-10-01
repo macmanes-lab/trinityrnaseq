@@ -16,10 +16,10 @@ trimmomatic_target:
 	ln -sf ${TRIMMOMATIC_CODE} Trimmomatic
 
 
-samtools:
-	tar xvf samtools-0.1.19.tar.bz2
-	cd samtools-0.1.19 && $(MAKE) LIBPATH=-ltinfo
-	mv samtools-0.1.19/samtools ./BIN/.
+#samtools:
+#	tar xvf samtools-0.1.19.tar.bz2
+#	cd samtools-0.1.19 && $(MAKE) LIBPATH=-ltinfo
+#	mv samtools-0.1.19/samtools ./BIN/.
 
 jellyfish:
 	tar -zxvf ${JELLYFISH_CODE}.tar.gz && ln -sf ${JELLYFISH_CODE} tmp.jellyfish
@@ -29,7 +29,7 @@ jellyfish:
 htslib_target:
 #	tar xjvf htslib-1.2.1.tar.bz2
 #	cd htslib-1.2.1 && ./configure && $(MAKE)
-	tar xvf ${HTSLIB_CODE} && cd htslib && $(MAKE)
+#	tar xvf ${HTSLIB_CODE} && cd htslib && $(MAKE)
 
 scaffold_iworm_contigs_target: htslib_target
 	cd scaffold_iworm_contigs && $(MAKE)
