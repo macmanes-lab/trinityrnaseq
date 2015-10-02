@@ -1227,42 +1227,18 @@ main: {
     
     if ($RUN_SKEWER_FLAG) {
 
-        print STDERR "---------------------------------------------------------------\n"
-                   . "------ Quality Trimming Via SKEWER  ---------------------\n"
-                   . "<< $skewer_params >>\n"
-                   . "---------------------------------------------------------------\n\n";
+        my $pipeliner = new Pipeliner(-verbose => ($TRINITY_COMPLETE_FLAG) ? $VERBOSE : max(1, $VERBOSE));
 
+        if (-s "$iworm_min100_fa_file") {
+            $pipeliner->add_commands( new Command($cmd, ".jellyfish_count.ok"));
 
-        unless ($seqType eq 'fq') {
-            die "Error, cannot do quality trimming on fasta files, need fastq files.";
-        }
-        
-        if (@left_files && @right_files) {
-            my @trimmed_left_files;
-            my @trimmed_right_files;
-            
-            while (@left_files) {
-                my $left_file = shift @left_files;
-                my $right_file = shift @right_files;
-
-                # note: trimmomatic can use gzipped files directly.
-                my ($left_file_trimmed, $right_file_trimmed) = &run_trimmomatic_PE($left_file, $right_file, $trimmomatic_quality_trim_params);
-                push (@trimmed_left_files, $left_file_trimmed);
-                push (@trimmed_right_files, $right_file_trimmed);
+            my $mapping_sam_file = "$chrysalis_output_dir/iworm.bowtie.nameSorted.bam";
+            if ($long_reads){
+            	$cmd = "bash -c \" set -o pipefail;bowtie2 --local -a --threads $CPU -f $iworm_min100_fa_file $mapping_reads_fa  | samtools view $PARALLEL_SAMTOOLS_SORT_TOKEN -F4 -Sb - | samtools sort -m $max_memory $PARALLEL_SAMTOOLS_SORT_TOKEN -no - - > $mapping_sam_file\" ";  
             }
-            
-            @left_files = @trimmed_left_files;
-            @right_files = @trimmed_right_files;
-        }
-        elsif (@single_files) {
-            my @trimmed_single_files;
-            foreach my $single_file (@single_files) {
-                my $trimmed_single_file = &run_trimmomatic_SE($single_file, $trimmomatic_quality_trim_params);
-                push (@trimmed_single_files, $trimmed_single_file);
+            else{
+            	$cmd = "bash -c \" set -o pipefail; bowtie -a -m 20 --best --strata --threads $CPU  --chunkmbs 512 -q -S -f $iworm_min100_fa_file $mapping_reads_fa  | samtools view $PARALLEL_SAMTOOLS_SORT_TOKEN -F4 -Sb - | samtools sort -m $max_memory $PARALLEL_SAMTOOLS_SORT_TOKEN -no - - > $mapping_sam_file\" ";
             }
-            @single_files = @trimmed_single_files;
-        }
-    }
 #################################################################################
 
 
