@@ -1345,6 +1345,7 @@ sub run_Trinity {
     my $trinity_target_fa = (@single_files) ? "single.fa" : "both.fa"; 
     my $inchworm_target_fa = $trinity_target_fa; # change this later if we have long_reads
     my $mapping_reads_fa = $trinity_target_fa; # dont include long reads in this... keep them separate.
+    my $mapping_reads_fq = $trinity_target_fq; # dont include long reads in this... keep them separate.
     
     ## Don't prep the inputs if Inchworm already exists.... Resuming earlier operations.
     my $inchworm_finished_checkpoint_file = "$inchworm_file.finished";
@@ -1535,7 +1536,7 @@ sub run_Trinity {
     $pm_chrysalis_start = `date +%s`;
     my $butterfly_cmds = &run_chrysalis($inchworm_file, $inchworm_target_fa,
                                         $min_contig_length, $group_pairs_distance, $SS_lib_type, 
-                                        $trinity_target_fa, $mapping_reads_fa);
+                                        $trinity_target_fa, $mapping_reads_fq);
     $pm_chrysalis_end = `date +%s`;
     
 
@@ -1585,7 +1586,7 @@ sub run_Trinity {
 ####
 sub run_chrysalis {
     my ($inchworm_file, $reads_file,
-        $min_contig_length, $group_pairs_distance, $SS_lib_type, $pairs_fa, $mapping_reads_fa) = @_;
+        $min_contig_length, $group_pairs_distance, $SS_lib_type, $pairs_fa, $mapping_reads_fq) = @_;
     
     
     my $butterfly_cmds = &create_full_path("$chrysalis_output_dir/butterfly_commands");
@@ -1618,10 +1619,10 @@ sub run_chrysalis {
 
             my $mapping_sam_file = "$chrysalis_output_dir/iworm.bowtie.nameSorted.bam";
             if ($long_reads){
-            	$cmd = "bash -c \" set -o pipefail;bowtie2 --local -a --threads $CPU -f $iworm_min100_fa_file $mapping_reads_fa  | samtools view $PARALLEL_SAMTOOLS_SORT_TOKEN -F4 -Sb - | samtools sort -m $max_memory $PARALLEL_SAMTOOLS_SORT_TOKEN -no - - > $mapping_sam_file\" ";  
+            	$cmd = "bash -c \" set -o pipefail;bowtie2 --local -a --threads $CPU $iworm_min100_fa_file $mapping_reads_fq  | samtools view $PARALLEL_SAMTOOLS_SORT_TOKEN -F4 -Sb - | samtools sort -m $max_memory $PARALLEL_SAMTOOLS_SORT_TOKEN -no - - > $mapping_sam_file\" ";  
             }
             else{
-            	$cmd = "bash -c \" set -o pipefail; bowtie -a -m 20 --best --strata --threads $CPU  --chunkmbs 512 -q -S -f $iworm_min100_fa_file $mapping_reads_fa  | samtools view $PARALLEL_SAMTOOLS_SORT_TOKEN -F4 -Sb - | samtools sort -m $max_memory $PARALLEL_SAMTOOLS_SORT_TOKEN -no - - > $mapping_sam_file\" ";
+            	$cmd = "bash -c \" set -o pipefail; bowtie -a -m 20 --best --strata --threads $CPU  --chunkmbs 512 -q -S $iworm_min100_fa_file $mapping_reads_fq  | samtools view $PARALLEL_SAMTOOLS_SORT_TOKEN -F4 -Sb - | samtools sort -m $max_memory $PARALLEL_SAMTOOLS_SORT_TOKEN -no - - > $mapping_sam_file\" ";
             }
             
             
@@ -1667,10 +1668,10 @@ sub run_chrysalis {
 
             my $mapping_sam_file = "$chrysalis_output_dir/iworm.bwa.nameSorted.bam";
             if ($long_reads){
-            	$cmd = "bash -c \" set -o pipefail; bwa mem -v 1 -p -t $CPU $iworm_min100_fa_file $mapping_reads_fa  | samtools view  -T . -bu - | samtools sort -l 0 -O bam -T tmp $PARALLEL_SAMTOOLS_SORT_TOKEN -m $grid_node_max_memory -o $mapping_sam_file - \" ";  
+            	$cmd = "bash -c \" set -o pipefail; bwa mem -v 1 -p -t $CPU $iworm_min100_fa_file $mapping_reads_fq  | samtools view  -T . -bu - | samtools sort -l 0 -O bam -T tmp $PARALLEL_SAMTOOLS_SORT_TOKEN -m $grid_node_max_memory -o $mapping_sam_file - \" ";  
             }
             else{
-            	$cmd = "bash -c \" set -o pipefail; bwa mem -v 1 -p -t $CPU $iworm_min100_fa_file $mapping_reads_fa  | samtools view  -T . -bu - | samtools sort -l 0 -O bam -T tmp $PARALLEL_SAMTOOLS_SORT_TOKEN -m $grid_node_max_memory -o $mapping_sam_file - \" ";  
+            	$cmd = "bash -c \" set -o pipefail; bwa mem -v 1 -p -t $CPU $iworm_min100_fa_file $mapping_reads_fq  | samtools view  -T . -bu - | samtools sort -l 0 -O bam -T tmp $PARALLEL_SAMTOOLS_SORT_TOKEN -m $grid_node_max_memory -o $mapping_sam_file - \" ";  
             }
                         
             $pipeliner->add_commands( new Command($cmd, "$mapping_sam_file.ok"));
@@ -2624,6 +2625,51 @@ sub collectl_stop {
 	system("$COLLECTL_DIR/collectl2html ${VERSION}");
 	}
 }
+
+
+
+################################################################################################################################
+sub run_skewer_PE {
+    my ($left_fq_file, $right_fq_file, $trimmomatic_params) = @_;
+
+    my $trimmed_left_file_base = basename($left_fq_file);
+    my $trimmed_right_file_base = basename($right_fq_file);
+
+    my ($trimmed_left_fq, $trimmed_right_fq) = ("$trimmed_left_file_base.PwU.qtrim.fq", "$trimmed_right_file_base.PwU.qtrim.fq");
+    my $checkpoint = "trimmomatic.ok";
+    
+    if (&files_exist($trimmed_left_fq, $trimmed_right_fq, $checkpoint)) {
+
+        print STDERR "###############################################################################\n";
+        print STDERR "#### Trimmomatic  process was previously completed. Skipping it and using existing qual-trimmed files: $trimmed_left_fq, $trimmed_right_fq\n";
+        print STDERR "###############################################################################\n";
+
+        return($trimmed_left_fq, $trimmed_right_fq);
+    }
+        
+
+    my $cmd = "bash -c \" set -o pipefail;seqtk mergepe $left_file $right_file | skewer -m pe -l 25 --quiet -Q 5 -t 12 -x $TRIMMOMATIC_DIR/adapters/TruSeq3-PE.fa - -1 | tee $mapping_reads_fq | $JELLYFISH_DIR/bin/jellyfish count -t $CPU -m $KMER_SIZE -s $jelly_hash_size -o /dev/stdout /dev/stdin 2> /dev/null | $JELLYFISH_DIR/bin/jellyfish dump -L $min_kmer_cov /dev/stdin -o $jelly_kmer_fa_file";
+    
+    &process_cmd($cmd);
+    
+    if ($NORMALIZE_READS_FLAG) {
+        ## can't use the orphans:
+        &process_cmd("cp $trimmed_left_file_base.P.qtrim $trimmed_left_fq");
+        &process_cmd("cp $trimmed_right_file_base.P.qtrim $trimmed_right_fq");
+    }
+    else {
+        
+        ## append the orphans so we can still use them in assembly
+        &process_cmd("cat $trimmed_left_file_base.P.qtrim $trimmed_left_file_base.U.qtrim > $trimmed_left_fq");
+        &process_cmd("cat $trimmed_right_file_base.P.qtrim $trimmed_right_file_base.U.qtrim > $trimmed_right_fq");
+    }
+################################################################################################################################
+
+
+
+
+
+
 
 ####
 sub run_trimmomatic_PE {
