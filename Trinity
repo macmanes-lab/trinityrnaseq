@@ -871,31 +871,31 @@ unless ($BFLY_JAR) {
 }
 
 
-my $USE_FASTOOL = 1; # by default, using fastool for fastq to fasta conversion
-if ($NO_FASTOOL) {
-    $USE_FASTOOL = 0;
-}
+# my $USE_FASTOOL = 1; # by default, using fastool for fastq to fasta conversion
+# if ($NO_FASTOOL) {
+#     $USE_FASTOOL = 0;
+# }
 
-if ($SS_lib_type) {
-    unless ($SS_lib_type =~ /^(R|F|RF|FR)$/) {
-        die "Error, unrecognized SS_lib_type value of $SS_lib_type. Should be: F, R, RF, or FR\n";
-    }
+# if ($SS_lib_type) {
+#     unless ($SS_lib_type =~ /^(R|F|RF|FR)$/) {
+#         die "Error, unrecognized SS_lib_type value of $SS_lib_type. Should be: F, R, RF, or FR\n";
+#     }
     
-    if (@single_files) {
-        if ($run_as_paired_flag) {
-            die "Error, if you have paired-end reads and want to run as strand-specific, then you must specify the --left and --right parameters";
-        }
-        if (length($SS_lib_type) != 1) {
-            die "Error, with --single reads, the --SS_lib_type can be 'F' or 'R' only.\n";
-        }
-    }
-    if (@left_files && @right_files) {
-        if (length($SS_lib_type) != 2) {
-            die "Error, with paired end reads, the --SS_lib_type can be 'RF' or 'FR' only.\n";
-        }
-    }
+#     if (@single_files) {
+#         if ($run_as_paired_flag) {
+#             die "Error, if you have paired-end reads and want to run as strand-specific, then you must specify the --left and --right parameters";
+#         }
+#         if (length($SS_lib_type) != 1) {
+#             die "Error, with --single reads, the --SS_lib_type can be 'F' or 'R' only.\n";
+#         }
+#     }
+#     if (@left_files && @right_files) {
+#         if (length($SS_lib_type) != 2) {
+#             die "Error, with paired end reads, the --SS_lib_type can be 'RF' or 'FR' only.\n";
+#         }
+#     }
     
-}
+# }
 
 unless ($genome_guided_bam ||  (@left_files && @right_files) || @single_files ) {
     die "Error, need either options 'left' and 'right' or option 'single' or 'genome_guided_bam'\n";
@@ -1220,7 +1220,7 @@ main: {
     
 #################################################################################
 ##########################
-    ##  Run Quality Trimming
+    ##  Run Quality Trimming SKEWER
     ##########################
 
 #make this pipe from Raw reads to kmer dump.
@@ -1232,12 +1232,11 @@ main: {
         if (-s "$iworm_min100_fa_file") {
             $pipeliner->add_commands( new Command($cmd, ".jellyfish_count.ok"));
 
-            my $mapping_sam_file = "$chrysalis_output_dir/iworm.bowtie.nameSorted.bam";
             if ($long_reads){
-            	$cmd = "bash -c \" set -o pipefail;bowtie2 --local -a --threads $CPU -f $iworm_min100_fa_file $mapping_reads_fa  | samtools view $PARALLEL_SAMTOOLS_SORT_TOKEN -F4 -Sb - | samtools sort -m $max_memory $PARALLEL_SAMTOOLS_SORT_TOKEN -no - - > $mapping_sam_file\" ";  
+            	$cmd = "bash -c \" set -o pipefail;seqtk mergepe $left_file $right_file | skewer -m pe -l 25 --quiet -Q 5 -t 12 -x $TRIMMOMATIC_DIR/adapters/TruSeq3-PE.fa - -1 | tee both.fq | $JELLYFISH_DIR/bin/jellyfish count -t $CPU -m $KMER_SIZE -s $jelly_hash_size -o /dev/stdout /dev/stdin 2> /dev/null | $JELLYFISH_DIR/bin/jellyfish dump -L $min_kmer_cov /dev/stdin -o $jelly_kmer_fa_file" ";  
             }
             else{
-            	$cmd = "bash -c \" set -o pipefail; bowtie -a -m 20 --best --strata --threads $CPU  --chunkmbs 512 -q -S -f $iworm_min100_fa_file $mapping_reads_fa  | samtools view $PARALLEL_SAMTOOLS_SORT_TOKEN -F4 -Sb - | samtools sort -m $max_memory $PARALLEL_SAMTOOLS_SORT_TOKEN -no - - > $mapping_sam_file\" ";
+            	$cmd = "bash -c \" set -o pipefail;seqtk mergepe $left_file $right_file | skewer -m pe -l 25 --quiet -Q 5 -t 12 -x $TRIMMOMATIC_DIR/adapters/TruSeq3-PE.fa - -1 | tee both.fq | $JELLYFISH_DIR/bin/jellyfish count -t $CPU -m $KMER_SIZE -s $jelly_hash_size -o /dev/stdout /dev/stdin 2> /dev/null | $JELLYFISH_DIR/bin/jellyfish dump -L $min_kmer_cov /dev/stdin -o $jelly_kmer_fa_file" ";
             }
 #################################################################################
 
@@ -2041,67 +2040,67 @@ sub run_inchworm {
     my @tmp_files; # to be deleted after successful inchworm run.
 
     
-    #####################################################
-    ## Using Jellyfish kmer method (if in initial read partitioning phase (1) )
-    #####################################################
+    # #####################################################
+    # ## Using Jellyfish kmer method (if in initial read partitioning phase (1) )
+    # #####################################################
 
-    if (! ($FORCE_INCHWORM_KMER_METHOD || $TRINITY_COMPLETE_FLAG) ) {
+    # if (! ($FORCE_INCHWORM_KMER_METHOD || $TRINITY_COMPLETE_FLAG) ) {
         
-        my $jelly_kmer_fa_file = "jellyfish.kmers.fa";
+    #     my $jelly_kmer_fa_file = "jellyfish.kmers.fa";
 
         
         
-        print STDERR "-------------------------------------------\n"
-            . "----------- Jellyfish  --------------------\n"
-            . "-- (building a k-mer catalog from reads) --\n"
-            . "-------------------------------------------\n\n";
+    #     print STDERR "-------------------------------------------\n"
+    #         . "----------- Jellyfish  --------------------\n"
+    #         . "-- (building a k-mer catalog from reads) --\n"
+    #         . "-------------------------------------------\n\n";
         
-        my $pipeliner = new Pipeliner(-verbose => ($TRINITY_COMPLETE_FLAG) ? $VERBOSE : max(1, $VERBOSE));
-        
-        
-        my $read_file_size = -s $reads;
-        
-        my $jelly_hash_size = int( ($jellyfish_ram - $read_file_size)/7); # decided upon by Rick Westerman
+    #     my $pipeliner = new Pipeliner(-verbose => ($TRINITY_COMPLETE_FLAG) ? $VERBOSE : max(1, $VERBOSE));
         
         
-        if ($jelly_hash_size < 100e6) {
-            $jelly_hash_size = 100e6; # seems reasonable for a min hash size as 100M
-        }
+    #     my $read_file_size = -s $reads;
         
-        ## for testing
-        if ($JELLY_S) {
-            $jelly_hash_size = $JELLY_S;
-        }
+    #     my $jelly_hash_size = int( ($jellyfish_ram - $read_file_size)/7); # decided upon by Rick Westerman
         
-        my $cmd = "$JELLYFISH_DIR/bin/jellyfish count -t $CPU -m $KMER_SIZE -s $jelly_hash_size ";
         
-        unless ($SS_lib_type) {
-            ## count both strands
-            $cmd .= " --canonical ";
-        }
+    #     if ($jelly_hash_size < 100e6) {
+    #         $jelly_hash_size = 100e6; # seems reasonable for a min hash size as 100M
+    #     }
         
-        $cmd .= " $reads";
+    #     ## for testing
+    #     if ($JELLY_S) {
+    #         $jelly_hash_size = $JELLY_S;
+    #     }
         
-        $pipeliner->add_commands(new Command($cmd, ".jellyfish_count.ok") );
+    #     my $cmd = "$JELLYFISH_DIR/bin/jellyfish count -t $CPU -m $KMER_SIZE -s $jelly_hash_size ";
+        
+    #     unless ($SS_lib_type) {
+    #         ## count both strands
+    #         $cmd .= " --canonical ";
+    #     }
+        
+    #     $cmd .= " $reads";
+        
+    #     $pipeliner->add_commands(new Command($cmd, ".jellyfish_count.ok") );
                 
         
-        my $jelly_db = "mer_counts.jf";
+    #     my $jelly_db = "mer_counts.jf";
         
-        $cmd = "$JELLYFISH_DIR/bin/jellyfish dump -L $min_kmer_cov $jelly_db > $jelly_kmer_fa_file";
+    #     $cmd = "$JELLYFISH_DIR/bin/jellyfish dump -L $min_kmer_cov $jelly_db > $jelly_kmer_fa_file";
         
-        $pipeliner->add_commands(new Command($cmd, ".jellyfish_dump.ok") );        
+    #     $pipeliner->add_commands(new Command($cmd, ".jellyfish_dump.ok") );        
         
-        ## write a histogram of the kmer counts.
-        $cmd = "$JELLYFISH_DIR/bin/jellyfish histo -t $CPU -o $jelly_kmer_fa_file.histo $jelly_db";
+    #     ## write a histogram of the kmer counts.
+    #     $cmd = "$JELLYFISH_DIR/bin/jellyfish histo -t $CPU -o $jelly_kmer_fa_file.histo $jelly_db";
         
-        $pipeliner->add_commands( new Command($cmd, ".jellyfish_histo.ok") );
+    #     $pipeliner->add_commands( new Command($cmd, ".jellyfish_histo.ok") );
         
                 
-        $pipeliner->run();
+    #     $pipeliner->run();
 
-        if (-s $jelly_db) {
-            unlink($jelly_db);
-        }
+    #     if (-s $jelly_db) {
+    #         unlink($jelly_db);
+    #     }
 
         if ($NO_RUN_INCHWORM_FLAG && ! $TRINITY_COMPLETE_FLAG) {
             print STDERR "WARNING:  --no_run_inchworm parameter in effect.  Stopping here prior to running inchworm.\n";
@@ -2180,70 +2179,70 @@ sub run_inchworm {
 }
 
 ####
-sub prep_seqs {
-    my ($initial_files_ref, $seqType, $file_prefix, $SS_lib_type) = @_;
+# sub prep_seqs {
+#     my ($initial_files_ref, $seqType, $file_prefix, $SS_lib_type) = @_;
  
-    my @initial_files = @$initial_files_ref;
+#     my @initial_files = @$initial_files_ref;
     
-    return if -e "$file_prefix.fa";
+#     return if -e "$file_prefix.fa";
    	
-    my $initial_file_str = join(" ",@initial_files);
-    if ($seqType eq "fq") {
-        # make fasta
-        foreach my $f (@initial_files){
-            my $fastool_cmd = "cat $f | $FASTOOL_DIR/fastool";
-            if ($f=~/\.gz$/){
-                $fastool_cmd = "gunzip -c $f | $FASTOOL_DIR/fastool";
-            }elsif ($f=~/\.bz2$/){
-                $fastool_cmd = "bunzip2 -dkc $f | $FASTOOL_DIR/fastool";
-            }
+#     my $initial_file_str = join(" ",@initial_files);
+#     if ($seqType eq "fq") {
+#         # make fasta
+#         foreach my $f (@initial_files){
+#             my $fastool_cmd = "cat $f | $FASTOOL_DIR/fastool";
+#             if ($f=~/\.gz$/){
+#                 $fastool_cmd = "gunzip -c $f | $FASTOOL_DIR/fastool";
+#             }elsif ($f=~/\.bz2$/){
+#                 $fastool_cmd = "bunzip2 -dkc $f | $FASTOOL_DIR/fastool";
+#             }
             
-            if ($SS_lib_type && $SS_lib_type eq "R") {
-                $fastool_cmd .= " --rev";
-            }
-            $fastool_cmd .= " --illumina-trinity --to-fasta >> $file_prefix.fa 2> $f.readcount ";
-            my $cmd = $fastool_cmd;
-            &process_cmd($cmd);
-        }
-    }
-    elsif ($seqType eq "fa") {
-        if (scalar(@initial_files) == 1 && (!$SS_lib_type || $SS_lib_type ne "R")) {
-            ## just symlink it here:
-            my $cmd = "ln -s $initial_file_str $file_prefix.fa";
-            if ($initial_file_str=~/\.gz$/){
-                $cmd = "gunzip -c $initial_file_str >$file_prefix.fa";
-            }elsif ($initial_file_str=~/\.bz2$/){
-                $cmd = "bunzip2 -dkc $initial_file_str >$file_prefix.fa";
-            }            
-            &process_cmd($cmd);
-        }elsif(scalar(@initial_files) > 1 && (!$SS_lib_type || $SS_lib_type ne "R")){
-            foreach my $f (@initial_files){
-                my $cmd = "cat $f >> $file_prefix.fa";
-                if ($f=~/\.gz$/){
-                    $cmd = "gunzip -c $f >> $file_prefix.fa";
-                }elsif ($f=~/\.bz2$/){
-                    $cmd = "bunzip2 -dkc $f >> $file_prefix.fa";
-                }
-                &process_cmd($cmd);
-          	}
-        }else {
-            #if ($SS_lib_type && $SS_lib_type eq "R") {
-            foreach my $f (@initial_files){
-                my $cmd = "$UTILDIR/support_scripts/revcomp_fasta.pl $f >> $file_prefix.fa";
-                if ($f=~/\.gz$/){
-                    $cmd = "gunzip -c $f | $UTILDIR/support_scripts/revcomp_fasta.pl >> $file_prefix.fa";
-                }elsif ($f=~/\.bz2$/){
-                    $cmd = "bunzip2 -dkc $f | $UTILDIR/support_scripts/revcomp_fasta.pl >> $file_prefix.fa";
-                }
-                &process_cmd($cmd);
-          	}
-        }
-    }
-    elsif (($seqType eq "cfa") | ($seqType eq "cfq")) {
-        confess "cfa, cfq not supported";
-    }
-    return \@initial_files;
-}
+#             if ($SS_lib_type && $SS_lib_type eq "R") {
+#                 $fastool_cmd .= " --rev";
+#             }
+#             $fastool_cmd .= " --illumina-trinity --to-fasta >> $file_prefix.fa 2> $f.readcount ";
+#             my $cmd = $fastool_cmd;
+#             &process_cmd($cmd);
+#         }
+#     }
+#     elsif ($seqType eq "fa") {
+#         if (scalar(@initial_files) == 1 && (!$SS_lib_type || $SS_lib_type ne "R")) {
+#             ## just symlink it here:
+#             my $cmd = "ln -s $initial_file_str $file_prefix.fa";
+#             if ($initial_file_str=~/\.gz$/){
+#                 $cmd = "gunzip -c $initial_file_str >$file_prefix.fa";
+#             }elsif ($initial_file_str=~/\.bz2$/){
+#                 $cmd = "bunzip2 -dkc $initial_file_str >$file_prefix.fa";
+#             }            
+#             &process_cmd($cmd);
+#         }elsif(scalar(@initial_files) > 1 && (!$SS_lib_type || $SS_lib_type ne "R")){
+#             foreach my $f (@initial_files){
+#                 my $cmd = "cat $f >> $file_prefix.fa";
+#                 if ($f=~/\.gz$/){
+#                     $cmd = "gunzip -c $f >> $file_prefix.fa";
+#                 }elsif ($f=~/\.bz2$/){
+#                     $cmd = "bunzip2 -dkc $f >> $file_prefix.fa";
+#                 }
+#                 &process_cmd($cmd);
+#           	}
+#         }else {
+#             #if ($SS_lib_type && $SS_lib_type eq "R") {
+#             foreach my $f (@initial_files){
+#                 my $cmd = "$UTILDIR/support_scripts/revcomp_fasta.pl $f >> $file_prefix.fa";
+#                 if ($f=~/\.gz$/){
+#                     $cmd = "gunzip -c $f | $UTILDIR/support_scripts/revcomp_fasta.pl >> $file_prefix.fa";
+#                 }elsif ($f=~/\.bz2$/){
+#                     $cmd = "bunzip2 -dkc $f | $UTILDIR/support_scripts/revcomp_fasta.pl >> $file_prefix.fa";
+#                 }
+#                 &process_cmd($cmd);
+#           	}
+#         }
+#     }
+#     elsif (($seqType eq "cfa") | ($seqType eq "cfq")) {
+#         confess "cfa, cfq not supported";
+#     }
+#     return \@initial_files;
+# }
 
 
 
