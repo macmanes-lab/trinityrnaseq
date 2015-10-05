@@ -18,8 +18,7 @@ KMER_SIZE=25
 jelly_hash_size=10G
 
 
-TRINITY ?= $(shell which 'Trinity')
-MAKEDIR := $(dir $(firstword $(MAKEFILE_LIST)))
+TRINITY ?= $(shell which 'Trinity.mk')
 TRINDIR := $(dir $(firstword $(TRINITY)))
 PATH:=$(MAKEDIR):$(PATH)
 $JELLYFISH_DIR := $(TRINDIR)/trinity-plugins/jellyfish/bin/
