@@ -50,7 +50,7 @@ $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100:$(DIR)/$(RUN)_out_
 	> $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
 
 $(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa :$(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
-	cd $(DIR)/$(RUN)_out_dir/ && \
+	cd $(DIR)/$(RUN)_out_dir/chrysalis/ && \
 	bwa index -p $(RUN)_bwa_index $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
 
 $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam:$(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa
