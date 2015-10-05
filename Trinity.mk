@@ -26,7 +26,7 @@ $TRIMMOMATIC_DIR := $(TRINDIR)/trinity-plugins/Trimmomatic/
 
 
 preprocess: $(READ1) $(READ2)
-    @echo $(TRINDIR)
+	@echo $(TRINDIR)
 	seqtk mergepe $(READ1) $(READ2) \
 	| skewer -m pe -l 25 --quiet -Q 5 -t 12 -x $(TRIMMOMATIC_DIR)/adapters/TruSeq3-PE.fa - -1 \
 	| tee both.fq \
