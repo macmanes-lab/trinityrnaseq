@@ -39,7 +39,7 @@ mkdirs:
 $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa: $(READ1) $(READ2)
 	seqtk mergepe $(READ1) $(READ2) \
 	| skewer -m pe -l $(KMER_SIZE) --quiet -Q $(TRIM) -t $(CPU) -x $(TRIMMOMATIC_DIR)/adapters/TruSeq3-PE.fa - -1 \
-	| tee | sed 's_/2_/2/2_g' | sed 's_/1_/1/1_g'| $(DIR)/$(RUN)_out_dir/both.fq \
+	| tee $(DIR)/$(RUN)_out_dir/both.fq \
 	| $(JELLYFISH_DIR)/jellyfish count -t $(CPU) -m $(KMER_SIZE) -s $(jelly_hash_size) -o /dev/stdout /dev/stdin 2> /dev/null \
 	| $(JELLYFISH_DIR)/jellyfish dump -L $(min_kmer_cov) /dev/stdin -o $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa
 
@@ -57,7 +57,8 @@ $(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa :$(DIR)/$(RUN)_out_dir/chrysalis/inchw
 
 $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam:$(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa
 	cd $(DIR)/$(RUN)_out_dir/chrysalis/ && \
-	bwa mem -v 1 -p -t $(CPU) $(RUN)_bwa_index $(DIR)/$(RUN)_out_dir/both.fq \
+	cat $(DIR)/$(RUN)_out_dir/both.fq | sed 's_/2_/2/2_g' | sed 's_/1_/1/1_g' \
+	| bwa mem -v 1 -p -t $(CPU) $(RUN)_bwa_index - \
 	| samtools view  -T . -bu - \
 	| samtools sort -l 0 -O bam -T tmp -@ $(CPU) -m $(grid_node_max_memory) -o $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam -
 
