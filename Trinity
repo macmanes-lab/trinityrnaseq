@@ -59,7 +59,7 @@ my $MAX_KMER_SIZE = 32;
 my $INCHWORM_CUSTOM_PARAMS;
 
 # option list:
-my ($seqType, @left_file, @right_file, @single_files, $SS_lib_type, $min_contig_length,
+my ($seqType, @left_files, @right_files, @single_files, $SS_lib_type, $min_contig_length,
     $group_pairs_distance, $jaccard_clip, $show_advanced_options,
     $output_directory, $prep_only
     );
