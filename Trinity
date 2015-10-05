@@ -2636,15 +2636,15 @@ sub run_skewer_PE {
     my $trimmed_right_file_base = basename($right_fq_file);
 
     my ($trimmed_left_fq, $trimmed_right_fq) = ("$trimmed_left_file_base.PwU.qtrim.fq", "$trimmed_right_file_base.PwU.qtrim.fq");
-    my $checkpoint = "trimmomatic.ok";
+    my $checkpoint = "skewer.ok";
     
-    if (&files_exist($trimmed_left_fq, $trimmed_right_fq, $checkpoint)) {
+    if (&files_exist($mapping_reads_fq , $checkpoint)) {
 
         print STDERR "###############################################################################\n";
         print STDERR "#### Trimmomatic  process was previously completed. Skipping it and using existing qual-trimmed files: $trimmed_left_fq, $trimmed_right_fq\n";
         print STDERR "###############################################################################\n";
 
-        return($trimmed_left_fq, $trimmed_right_fq);
+        return($jelly_kmer_fa_file);
     }
         
 
@@ -2652,17 +2652,6 @@ sub run_skewer_PE {
     
     &process_cmd($cmd);
     
-    if ($NORMALIZE_READS_FLAG) {
-        ## can't use the orphans:
-        &process_cmd("cp $trimmed_left_file_base.P.qtrim $trimmed_left_fq");
-        &process_cmd("cp $trimmed_right_file_base.P.qtrim $trimmed_right_fq");
-    }
-    else {
-        
-        ## append the orphans so we can still use them in assembly
-        &process_cmd("cat $trimmed_left_file_base.P.qtrim $trimmed_left_file_base.U.qtrim > $trimmed_left_fq");
-        &process_cmd("cat $trimmed_right_file_base.P.qtrim $trimmed_right_file_base.U.qtrim > $trimmed_right_fq");
-    }
 ################################################################################################################################
 
 
