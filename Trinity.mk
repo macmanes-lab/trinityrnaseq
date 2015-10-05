@@ -28,7 +28,7 @@ TRIMMOMATIC_DIR := $(TRINDIR)/trinity-plugins/Trimmomatic/
 
 all: mkdirs $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100 \
 	$(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam \
-	$(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt
+	$(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt $(DIR)/$(RUN)_out_dir/chrysalis/GraphFromIwormFasta.out
 
 
 mkdirs:
@@ -65,7 +65,10 @@ $(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt:$(DIR)/$(RUN)_out_dir/chrysa
 	$(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam \
 	$(DIR)/$(RUN)_out_dir/inchworm.K25.L25.DS.fa > $(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt
 
-
+$(DIR)/$(RUN)_out_dir/chrysalis/GraphFromIwormFasta.out:$(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt
+	$(TRINDIR)/Chrysalis/GraphFromFasta -i $(DIR)/$(RUN)_out_dir/inchworm.K25.L25.DS.fa -r $(DIR)/$(RUN)_out_dir/both.fq \
+	-min_contig_length 200 -min_glue 2 -glue_factor 0.05 -min_iso_ratio 0.05 \
+	-t $(CPU) -k 24 -kk 48  -scaffolding $(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt  > $(DIR)/$(RUN)_out_dir/chrysalis/GraphFromIwormFasta.out
 
 
 
