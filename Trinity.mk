@@ -25,13 +25,16 @@ PATH:=$(MAKEDIR):$(PATH)
 JELLYFISH_DIR := $(TRINDIR)/trinity-plugins/jellyfish/bin/
 TRIMMOMATIC_DIR := $(TRINDIR)/trinity-plugins/Trimmomatic/
 
+preprocess:$(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa
+
 all: mkdirs preprocess iworm
+
 
 mkdirs:
 	mkdir $(DIR)/$(RUN)_out_dir
 	mkdir $(DIR)/$(RUN)_out_dir/chrysalis
 
-preprocess: $(READ1) $(READ2)
+$(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa: $(READ1) $(READ2)
 	seqtk mergepe $(READ1) $(READ2) \
 	| skewer -m pe -l 25 --quiet -Q 5 -t 12 -x $(TRIMMOMATIC_DIR)/adapters/TruSeq3-PE.fa - -1 \
 	| tee both.fq \
