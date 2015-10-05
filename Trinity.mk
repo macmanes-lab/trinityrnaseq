@@ -17,7 +17,8 @@ BCODES=barcodes.fa
 min_kmer_cov=1
 KMER_SIZE=25
 jelly_hash_size=10G
-
+grid_node_max_memory=1G
+mapping_bam_file = file.bam
 
 TRINITY ?= $(shell which 'Trinity.mk')
 TRINDIR := $(dir $(firstword $(TRINITY)))
@@ -27,7 +28,7 @@ TRIMMOMATIC_DIR := $(TRINDIR)/trinity-plugins/Trimmomatic/
 
 
 all: mkdirs $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100 \
-	bwa_index
+	$(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa $mapping_sam_file
 
 
 mkdirs:
@@ -37,7 +38,7 @@ mkdirs:
 $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa: $(READ1) $(READ2)
 	seqtk mergepe $(READ1) $(READ2) \
 	| skewer -m pe -l 25 --quiet -Q 5 -t 12 -x $(TRIMMOMATIC_DIR)/adapters/TruSeq3-PE.fa - -1 \
-	| tee both.fq \
+	| tee $(DIR)/$(RUN)_out_dir/both.fq \
 	| $(JELLYFISH_DIR)/jellyfish count -t $(CPU) -m $(KMER_SIZE) -s $(jelly_hash_size) -o /dev/stdout /dev/stdin 2> /dev/null \
 	| $(JELLYFISH_DIR)/jellyfish dump -L $(min_kmer_cov) /dev/stdin -o $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa
 
@@ -49,9 +50,14 @@ $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100:$(DIR)/$(RUN)_out_
 	$(TRINDIR)/util/misc/fasta_filter_by_min_length.pl $(DIR)/$(RUN)_out_dir/inchworm.K25.L25.DS.fa 100 \
 	> $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
 
-bwa_index:$(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
+$(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa :$(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
 	cd $(DIR)/$(RUN)_out_dir/ && \
 	bwa index -p $(RUN)_bwa_index $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
+
+$mapping_sam_file:$(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa
+	bwa mem -v 1 -p -t $CPU $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100 $(DIR)/$(RUN)_out_dir/both.fq \
+	| samtools view  -T . -bu - \
+	| samtools sort -l 0 -O bam -T tmp -@ $(CPU) -m $grid_node_max_memory -o $mapping_bam_file -
 
 
 
