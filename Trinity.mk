@@ -30,4 +30,4 @@ preprocess: $(READ1) $(READ2)
 	| skewer -m pe -l 25 --quiet -Q 5 -t 12 -x $(TRIMMOMATIC_DIR)/adapters/TruSeq3-PE.fa - -1 \
 	| tee both.fq \
 	| $(JELLYFISH_DIR)/jellyfish count -t $(CPU) -m $(KMER_SIZE) -s $(jelly_hash_size) -o /dev/stdout /dev/stdin 2> /dev/null \
-	| $(JELLYFISH_DIR)/jellyfish dump -L $(min_kmer_cov) /dev/stdin -o $(jelly_kmer_fa_file)
+	| $(JELLYFISH_DIR)/jellyfish dump -L $(min_kmer_cov) /dev/stdin -o jellyfish.kmers.fa
