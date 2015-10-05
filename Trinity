@@ -4,7 +4,6 @@ use strict;
 use warnings;
 use threads;
 no strict qw(subs refs);
-
 use FindBin;
 use lib ("$FindBin::RealBin/PerlLib");
 use File::Basename;
@@ -190,7 +189,7 @@ my $run_as_paired_flag = 0;  ## in case we have paired reads in single fasta fil
 my $weldmer_size = 48;
 my $FORCE_INCHWORM_KMER_METHOD = 0; 
 
-
+my $jelly_kmer_fa_file = 0;
 my $PARALLEL_IWORM_FLAG = 1;
 my $NO_PARALLEL_IWORM = 0;
 
@@ -1233,10 +1232,10 @@ main: {
             $pipeliner->add_commands( new Command($cmd, ".jellyfish_count.ok"));
 
             if ($long_reads){
-            	$cmd = "bash -c \" set -o pipefail;seqtk mergepe $left_file $right_file | skewer -m pe -l 25 --quiet -Q 5 -t 12 -x $TRIMMOMATIC_DIR/adapters/TruSeq3-PE.fa - -1 | tee both.fq | $JELLYFISH_DIR/bin/jellyfish count -t $CPU -m $KMER_SIZE -s $jelly_hash_size -o /dev/stdout /dev/stdin 2> /dev/null | $JELLYFISH_DIR/bin/jellyfish dump -L $min_kmer_cov /dev/stdin -o $jelly_kmer_fa_file" ";  
+            	$cmd = "bash -c \" set -o pipefail;seqtk mergepe $left_file $right_file | skewer -m pe -l 25 --quiet -Q 5 -t 12 -x $TRIMMOMATIC_DIR/adapters/TruSeq3-PE.fa - -1 | tee both.fq | $JELLYFISH_DIR/bin/jellyfish count -t $CPU -m $KMER_SIZE -s $jelly_hash_size -o /dev/stdout /dev/stdin 2> /dev/null | $JELLYFISH_DIR/bin/jellyfish dump -L $min_kmer_cov /dev/stdin -o $jelly_kmer_fa_file" ;  
             }
             else{
-            	$cmd = "bash -c \" set -o pipefail;seqtk mergepe $left_file $right_file | skewer -m pe -l 25 --quiet -Q 5 -t 12 -x $TRIMMOMATIC_DIR/adapters/TruSeq3-PE.fa - -1 | tee both.fq | $JELLYFISH_DIR/bin/jellyfish count -t $CPU -m $KMER_SIZE -s $jelly_hash_size -o /dev/stdout /dev/stdin 2> /dev/null | $JELLYFISH_DIR/bin/jellyfish dump -L $min_kmer_cov /dev/stdin -o $jelly_kmer_fa_file" ";
+            	$cmd = "bash -c \" set -o pipefail;seqtk mergepe $left_file $right_file | skewer -m pe -l 25 --quiet -Q 5 -t 12 -x $TRIMMOMATIC_DIR/adapters/TruSeq3-PE.fa - -1 | tee both.fq | $JELLYFISH_DIR/bin/jellyfish count -t $CPU -m $KMER_SIZE -s $jelly_hash_size -o /dev/stdout /dev/stdin 2> /dev/null | $JELLYFISH_DIR/bin/jellyfish dump -L $min_kmer_cov /dev/stdin -o $jelly_kmer_fa_file" ;
             }
 #################################################################################
 
