@@ -57,7 +57,7 @@ $(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa :$(DIR)/$(RUN)_out_dir/chrysalis/inchw
 $mapping_sam_file:$(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa
 	bwa mem -v 1 -p -t $CPU $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100 $(DIR)/$(RUN)_out_dir/both.fq \
 	| samtools view  -T . -bu - \
-	| samtools sort -l 0 -O bam -T tmp -@ $(CPU) -m $grid_node_max_memory -o $mapping_bam_file -
+	| samtools sort -l 0 -O bam -T tmp -@ $(CPU) -m $(grid_node_max_memory) -o $(mapping_bam_file) -
 
 
 
