@@ -18,7 +18,6 @@ min_kmer_cov=1
 KMER_SIZE=25
 jelly_hash_size=10G
 grid_node_max_memory=1G
-mapping_bam_file = file.bam
 
 TRINITY ?= $(shell which 'Trinity.mk')
 TRINDIR := $(dir $(firstword $(TRINITY)))
@@ -28,7 +27,7 @@ TRIMMOMATIC_DIR := $(TRINDIR)/trinity-plugins/Trimmomatic/
 
 
 all: mkdirs $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100 \
-	$(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa $mapping_sam_file
+	$(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam
 
 
 mkdirs:
@@ -54,10 +53,10 @@ $(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa :$(DIR)/$(RUN)_out_dir/chrysalis/inchw
 	cd $(DIR)/$(RUN)_out_dir/ && \
 	bwa index -p $(RUN)_bwa_index $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
 
-$mapping_sam_file:$(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa
+$(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam:$(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa
 	bwa mem -v 1 -p -t $CPU $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100 $(DIR)/$(RUN)_out_dir/both.fq \
 	| samtools view  -T . -bu - \
-	| samtools sort -l 0 -O bam -T tmp -@ $(CPU) -m $(grid_node_max_memory) -o $(mapping_bam_file) -
+	| samtools sort -l 0 -O bam -T tmp -@ $(CPU) -m $(grid_node_max_memory) -o $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam -
 
 
 
