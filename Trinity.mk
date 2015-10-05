@@ -25,9 +25,8 @@ PATH:=$(MAKEDIR):$(PATH)
 JELLYFISH_DIR := $(TRINDIR)/trinity-plugins/jellyfish/bin/
 TRIMMOMATIC_DIR := $(TRINDIR)/trinity-plugins/Trimmomatic/
 
-preprocess:$(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa
 
-all: mkdirs preprocess iworm
+all: mkdirs $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa iworm
 
 
 mkdirs:
