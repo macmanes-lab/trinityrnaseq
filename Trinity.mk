@@ -51,7 +51,7 @@ FastaToDeBruijn:$(DIR)/$(RUN)_out_dir/read_partitions/bundled_iworm_contigs.fast
 
 mkdirs:
 	mkdir -p $(DIR)/$(RUN)_out_dir
-	mkdir -p $(DIR)/$(RUN)_out_dir/chrysalis/read_partitions
+	mkdir -p $(DIR)/$(RUN)_out_dir/chrysalis/
 	mkdir -p $(DIR)/$(RUN)_out_dir/read_partitions
 
 
@@ -124,9 +124,10 @@ $(DIR)/$(RUN)_out_dir/Trinity.fasta:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 #/share/trinityrnaseq/Inchworm/bin//inchworm --reads single.fa --run_inchworm -K 25 -L 25 --monitor 1  --DS  --num_threads 1  --PARALLEL_IWORM  > /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/inchworm.K25.L25.DS.fa.tmp
 
 $(RUN)/inchworm.K25.L25.DS.fa:
-	mkdir $(RUN) && cd $(RUN) && \
-	$(TRINDIR)/Inchworm/bin/inchworm --kmers jellyfish.kmers.fa --run_inchworm -K $(KMER_SIZE) -L $(KMER_SIZE) --monitor 1 \
-	--DS --num_threads $(IWORM_CPU) --PARALLEL_IWORM  > $(RUN)/inchworm.K25.L25.DS.fa 2>/dev/null
+	mkdir -p $(RUN) && cd $(RUN) && \
+	$(TRINDIR)/Inchworm/bin/inchworm --reads $READ1 \
+	--run_inchworm -K $(KMER_SIZE) -L $(KMER_SIZE) --monitor 1 \
+	--DS --num_threads 1 --PARALLEL_IWORM  > $(RUN)/inchworm.K25.L25.DS.fa 2>/dev/null
 
 #/share/trinityrnaseq/Chrysalis/GraphFromFasta -i /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/inchworm.K25.L25.DS.fa -r single.fa -min_contig_length 200 -min_glue 2 -glue_factor 0.05 -min_iso_ratio 0.05 -t 1 -k 24 -kk 48  > /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/GraphFromIwormFasta.out
 
