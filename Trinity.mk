@@ -184,6 +184,7 @@ $(RUN)/chrysalis/component_base_listing.txt:
 		--deBruijns $(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn \
 		--componentReads $(RUN)/chrysalis/readsToComponents.out.sort -N 1000 -L 200
 
+#DONE!!
 qgraph:
 	/share/trinityrnaseq/Chrysalis/QuantifyGraph -g $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.tmp  \
 		-i $(RUN)/chrysalis/Component_bins/Cbin0//c0.reads.tmp \
