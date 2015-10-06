@@ -57,7 +57,7 @@ $(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa :$(DIR)/$(RUN)_out_dir/chrysalis/inchw
 
 $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam:$(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa
 	cd $(DIR)/$(RUN)_out_dir/chrysalis/ && \
-	| bwa mem -v 1 -p -t $(CPU) $(RUN)_bwa_index $(DIR)/$(RUN)_out_dir/both.fq \
+	bwa mem -v 1 -p -t $(CPU) $(RUN)_bwa_index $(DIR)/$(RUN)_out_dir/both.fq \
 	| awk -F '\t' 'BEGIN{OFS="\t";} /^@/ {print;next;} {$1=sprintf("%s/%d",$1,and($2,64)==0?2:1); print;}' \
 	| samtools view  -T . -bu - \
 	| samtools sort -l 0 -O bam -T tmp -@ $(CPU) -m $(grid_node_max_memory) -o $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam -
