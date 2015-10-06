@@ -125,7 +125,7 @@ $(DIR)/$(RUN)_out_dir/Trinity.fasta:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 
 $(RUN)/inchworm.K25.L25.DS.fa:
 	mkdir -p $(RUN) && cd $(RUN) && \
-	$(TRINDIR)/Inchworm/bin/inchworm --reads $READ1 \
+	$(TRINDIR)/Inchworm/bin/inchworm --reads $(READ1) \
 	--run_inchworm -K $(KMER_SIZE) -L $(KMER_SIZE) --monitor 1 \
 	--DS --num_threads 1 --PARALLEL_IWORM  > $(RUN)/inchworm.K25.L25.DS.fa 2>/dev/null
 
