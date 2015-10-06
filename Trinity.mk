@@ -45,7 +45,7 @@ inchworm2: $(RUN)/inchworm.K25.L25.DS.fa
 graph2:$(RUN)/chrysalis/GraphFromIwormFasta.out
 bundle2:$(RUN)/bundled_iworm_contigs.fasta
 read2comp2:$(RUN)/readsToComponents.out
-sort2:$(DIR)/$(RUN)_out_dir/read_partitions/readsToComponents.out.sort
+sort2:$(RUN)/chrysalis/readsToComponents.out.sort
 FastaToDeBruijn:$(DIR)/$(RUN)_out_dir/read_partitions/bundled_iworm_contigs.fasta.deBruijn
 
 
@@ -151,15 +151,19 @@ $(RUN)/bundled_iworm_contigs.fasta:
 #/share/trinityrnaseq/Chrysalis/ReadsToTranscripts -i single.fa -f /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta -o /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/readsToComponents.out -t 1 -max_mem_reads 50000000
 
 #read2comp2
-
+#DONE
 $(RUN)/readsToComponents.out:
-	$(TRINDIR)/Chrysalis/ReadsToTranscripts -i $(READ1) -f $(RUN)/chrysalis/bundled_iworm_contigs.fasta -o $(RUN)/chrysalis/readsToComponents.out \
+	$(TRINDIR)/Chrysalis/ReadsToTranscripts -i $(READ1) \
+	-f $(RUN)/chrysalis/bundled_iworm_contigs.fasta \
+	-o $(RUN)/chrysalis/readsToComponents.out \
 	-t $(CPU) -max_mem_reads $(max_mem_reads)  2>/dev/null
 
 #/usr/bin/sort --parallel=1 -T . -S 1G -k 1,1n /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/readsToComponents.out > /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/readsToComponents.out.sort
 
-$(DIR)/$(RUN)_out_dir/read_partitions/readsToComponents.out.sort:
-	/usr/bin/sort --parallel=6 -T . -S 10G -k 1,1n $(DIR)/$(RUN)_out_dir/read_partitions/readsToComponents.out > $(DIR)/$(RUN)_out_dir/read_partitions/readsToComponents.out.sort 2>/dev/null
+#sort2
+
+$(RUN)/chrysalis/readsToComponents.out.sort:
+	/usr/bin/sort --parallel=6 -T . -S 10G -k 1,1n $(RUN)/chrysalis/readsToComponents.out > $(RUN)/chrysalis/readsToComponents.out.sort 2>/dev/null
 
 #/share/trinityrnaseq/Inchworm/bin//FastaToDeBruijn --fasta /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta -K 24 --graph_per_record --threads 1 > /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta.deBruijn
 
