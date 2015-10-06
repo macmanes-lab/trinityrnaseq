@@ -48,6 +48,7 @@ read2comp2:$(RUN)/readsToComponents.out
 sort2:$(RUN)/chrysalis/readsToComponents.out.sort
 FastaToDeBruijn:$(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn
 partition:$(RUN)/chrysalis/component_base_listing.txt
+qgraph:$(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out
 
 mkdirs:
 	mkdir -p $(DIR)/$(RUN)_out_dir
@@ -185,7 +186,7 @@ $(RUN)/chrysalis/component_base_listing.txt:
 		--componentReads $(RUN)/chrysalis/readsToComponents.out.sort -N 1000 -L 200
 
 #DONE!!
-qgraph:
+$(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out:
 	/share/trinityrnaseq/Chrysalis/QuantifyGraph -g $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.tmp  \
 		-i $(RUN)/chrysalis/Component_bins/Cbin0//c0.reads.tmp \
 		-o $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out -max_reads 200000  -k 24
