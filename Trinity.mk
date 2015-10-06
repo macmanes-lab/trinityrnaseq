@@ -134,6 +134,7 @@ $(RUN)/inchworm.K25.L25.DS.fa:
 #graph2
 #DONE!
 $(RUN)/chrysalis/GraphFromIwormFasta.out:
+	mkdir -p $(RUN)/chrysalis/ && \
 	$(TRINDIR)/Chrysalis/GraphFromFasta -i $(RUN)/inchworm.K25.L25.DS.fa \
 	-r $(READ1) -min_contig_length $(MIN_LEN) -min_glue 2 -glue_factor 0.05 -min_iso_ratio 0.05 \
 	-t $(CPU) -k 24 -kk 48   \
