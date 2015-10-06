@@ -19,7 +19,7 @@ KMER_SIZE=25
 jelly_hash_size=10G
 grid_node_max_memory=1G
 MIN_LEN=200
-max_mem_reads=10000000
+max_mem_reads=50000000
 TRINITY ?= $(shell which 'Trinity.mk')
 TRINDIR := $(dir $(firstword $(TRINITY)))
 PATH := $(MAKEDIR):$(PATH)
@@ -48,6 +48,7 @@ $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa: $(READ1) $(READ2)
 	| tee $(DIR)/$(RUN)_out_dir/both.fq \
 	| $(JELLYFISH_DIR)/jellyfish count -t $(CPU) -m $(KMER_SIZE) -s $(jelly_hash_size) -o /dev/stdout /dev/stdin 2> /dev/null \
 	| $(JELLYFISH_DIR)/jellyfish dump -L $(min_kmer_cov) /dev/stdin -o $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa
+	seqtk seq -A $(DIR)/$(RUN)_out_dir/both.fq > $(DIR)/$(RUN)_out_dir/both.fa &
 
 $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100:$(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa
 	cd $(DIR)/$(RUN)_out_dir/ && \
@@ -82,7 +83,7 @@ $(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta:$(DIR)/$(RUN)_out_di
 	$(TRINDIR)/Chrysalis/CreateIwormFastaBundle -i $(DIR)/$(RUN)_out_dir/chrysalis/GraphFromIwormFasta.out -o $(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta -min $(MIN_LEN) 2>/dev/null
 
 $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out:$(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta
-	$(TRINDIR)/Chrysalis/ReadsToTranscripts -i $(DIR)/$(RUN)_out_dir/both.fq -f $(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta -o $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out \
+	$(TRINDIR)/Chrysalis/ReadsToTranscripts -i $(DIR)/$(RUN)_out_dir/both.fa -f $(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta -o $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out \
 	-t $(CPU) -max_mem_reads $(max_mem_reads)  2>/dev/null
 
 $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out
@@ -96,11 +97,11 @@ $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds:$(DIR)/$(RUN)_out_dir/partitioned_r
 	--trinity_complete > $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 
 $(DIR)/$(RUN)_out_dir/Trinity.fasta:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
-	@echo "\n\n"
+	@echo '\n\n'
 	@echo --------------------------------------------------------------------------------
 	@echo ------------ Trinity Phase 2: Assembling Clusters of Reads ---------------------
 	@echo --------------------------------------------------------------------------------
-	@echo "\n\n"
+	@echo '\n\n'
 	$(TRINDIR)/trinity-plugins/parafly/bin/ParaFly -c $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds -CPU $(CPU) -v
 	find read_partitions/  -name '*inity.fasta'  | $(TRINDIR)/util/support_scripts/partitioned_trinity_aggregator.pl TRINITY_DN > $(DIR)/$(RUN)_out_dir/Trinity.fasta
 
