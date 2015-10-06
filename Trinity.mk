@@ -27,7 +27,7 @@ TRIMMOMATIC_DIR := $(TRINDIR)/trinity-plugins/Trimmomatic/
 
 
 all: mkdirs jellyfish inchworm index bwa iworm_scaffolds graph bundle read2comp sort list recursive
-step2: inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn partition
+step2: inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn partition qgraph
 
 jellyfish:$(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa
 inchworm: $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
@@ -172,18 +172,21 @@ $(RUN)/chrysalis/readsToComponents.out.sort:
 #FastaToDeBruijn
 $(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn:
 	$(TRINDIR)/Inchworm/bin//FastaToDeBruijn \
-	--fasta $(RUN)/chrysalis/bundled_iworm_contigs.fasta \
-	-K 24 --graph_per_record --threads $(CPU) \
-	> $(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn
+		--fasta $(RUN)/chrysalis/bundled_iworm_contigs.fasta \
+		-K 24 --graph_per_record --threads $(CPU) \
+		> $(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn
 
 #/share/trinityrnaseq/util/support_scripts/partition_chrysalis_graphs_n_reads.pl --deBruijns /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta.deBruijn --componentReads /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/readsToComponents.out.sort -N 1000 -L 200
 
 $(RUN)/chrysalis/component_base_listing.txt:
 	$(TRINDIR)/util/support_scripts/partition_chrysalis_graphs_n_reads.pl \
-	--deBruijns $(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn \
-	--componentReads $(RUN)/chrysalis/readsToComponents.out.sort -N 1000 -L 200
+		--deBruijns $(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn \
+		--componentReads $(RUN)/chrysalis/readsToComponents.out.sort -N 1000 -L 200
 
-
+qgraph:
+	/share/trinityrnaseq/Chrysalis/QuantifyGraph -g $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.tmp  \
+		-i $(RUN)/chrysalis/Component_bins/Cbin0//c0.reads.tmp \
+		-o $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out -max_reads 200000  -k 24
 
 #/share/trinityrnaseq/trinity-plugins/parafly/bin/ParaFly -c /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/quantifyGraph_commands -CPU 1 -failed_cmds failed_quantify_graph_commands.50578.txt -shuffle
 
