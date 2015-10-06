@@ -30,7 +30,7 @@ all: mkdirs jellyfish inchworm index bwa iworm_scaffolds graph bundle read2comp 
 step2: inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn list concatenate
 
 jellyfish:$(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa
-inchworm $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
+inchworm: $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
 index:$(DIR)/$(RUN)_out_dir/chrysalis/$(RUN)_bwa_index.sa
 bwa:$(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam
 iworm_scaffolds:$(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt
