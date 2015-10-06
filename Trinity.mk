@@ -26,7 +26,7 @@ JELLYFISH_DIR := $(TRINDIR)/trinity-plugins/jellyfish/bin/
 TRIMMOMATIC_DIR := $(TRINDIR)/trinity-plugins/Trimmomatic/
 bflyHeapSpaceInit = 1G
 bflyHeapSpaceMax = 4G
-bflyGCThreads = 2
+bflyGCThreads=2
 max_frag_len = 1000
 num_reads=100000
 
@@ -200,8 +200,8 @@ $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out:
 
 #/share/trinityrnaseq/trinity-plugins/parafly/bin/ParaFly -c /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/butterfly_commands -shuffle -CPU 1 -failed_cmds failed_butterfly_commands.50578.txt
 bfly:
-	java -Xmx $(bflyHeapSpaceMax) -Xms $(bflyHeapSpaceInit) \
-	-XX:ParallelGCThreads $(bflyGCThreads) \
+	java -Xmx$(bflyHeapSpaceMax) -Xms$(bflyHeapSpaceInit) \
+	-XX:ParallelGCThreads=$(bflyGCThreads) \
 	-jar $(TRINDIR)/Butterfly/Butterfly.jar \
 	-N $(num_reads) -L $(MIN_LEN) -F $(max_frag_len) \
 	-C $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph
