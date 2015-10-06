@@ -7,13 +7,12 @@ SHELL=/bin/bash -o pipefail
 
 
 DIR := ${CURDIR}
-CPU=16
+CPU=10
 IWORM_CPU=10
 TRIM=2
 RUN=trinity
-READ1=left.fastq
-READ2=right.fastq
-BCODES=barcodes.fa
+READ1=
+READ2=
 min_kmer_cov=1
 KMER_SIZE=25
 jelly_hash_size=10G
@@ -27,14 +26,14 @@ JELLYFISH_DIR := $(TRINDIR)/trinity-plugins/jellyfish/bin/
 TRIMMOMATIC_DIR := $(TRINDIR)/trinity-plugins/Trimmomatic/
 
 
-all: mkdirs $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100 \
+all: mkdirs jellyfish $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100 \
 	$(DIR)/$(RUN)_out_dir/chrysalis/$(RUN)_bwa_index.sa $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam \
 	$(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt $(DIR)/$(RUN)_out_dir/chrysalis/GraphFromIwormFasta.out \
 	$(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out \
 	$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort $(DIR)/$(RUN)_out_dir/partitioned_reads.files.list \
 	$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds $(DIR)/$(RUN)_out_dir/Trinity.fasta
 
-
+jellyfish:$(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa
 
 mkdirs:
 	mkdir -p $(DIR)/$(RUN)_out_dir
@@ -91,7 +90,7 @@ $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort:$(DIR)/$(RUN)_out_dir
 
 $(DIR)/$(RUN)_out_dir/partitioned_reads.files.list:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort
 	cat $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort | sort -k1,1 -u | awk '{print "$(DIR)/$(RUN)_out_dir/read_partitions/c"$$1".trinity.reads.fa"}' > $(DIR)/$(RUN)_out_dir/partitioned_reads.files.list
-	for i in $$(awk '{print $$1}' $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort | sort -u); do awk '{print $$2 "\n" $$4}' $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort \
+	for i in $$(awk '{print $$1}' $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort | sort -u); do grep -w ^$$i $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort | awk '{print $$2 "\n" $$4}' \
 	> $(DIR)/$(RUN)_out_dir/read_partitions/c$$i.trinity.reads.fa ; done
 
 $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds:$(DIR)/$(RUN)_out_dir/partitioned_reads.files.list
