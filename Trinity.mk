@@ -1,4 +1,4 @@
-"""#!/usr/bin/make -rRsf
+#!/usr/bin/make -rRsf
 
 SHELL=/bin/bash -o pipefail
 
@@ -104,10 +104,3 @@ $(DIR)/$(RUN)_out_dir/Trinity.fasta:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 	$(TRINDIR)/trinity-plugins/parafly/bin/ParaFly -c $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds -CPU $(CPU) -v
 	find read_partitions/  -name '*inity.fasta'  | $(TRINDIR)/util/support_scripts/partitioned_trinity_aggregator.pl TRINITY_DN > $(DIR)/$(RUN)_out_dir/Trinity.fasta
 
-
-
-
-
-
-
-"""
