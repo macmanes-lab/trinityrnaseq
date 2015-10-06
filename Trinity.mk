@@ -33,8 +33,8 @@ all: mkdirs $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa $(DIR)/$(RUN)_out_dir/chrys
 
 
 mkdirs:
-	mkdir $(DIR)/$(RUN)_out_dir
-	mkdir $(DIR)/$(RUN)_out_dir/chrysalis
+	mkdir -p $(DIR)/$(RUN)_out_dir
+	mkdir -p $(DIR)/$(RUN)_out_dir/chrysalis
 
 $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa: $(READ1) $(READ2)
 	seqtk mergepe $(READ1) $(READ2) \
