@@ -31,12 +31,16 @@ all: mkdirs $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa $(DIR)/$(RUN)_out_dir/chrys
 	$(DIR)/$(RUN)_out_dir/chrysalis/$(RUN)_bwa_index.sa $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam \
 	$(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt $(DIR)/$(RUN)_out_dir/chrysalis/GraphFromIwormFasta.out \
 	$(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out \
-	$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort
+	$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort $(DIR)/$(RUN)_out_dir/partitioned_reads.files.list \
+	$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
+
 
 
 mkdirs:
 	mkdir -p $(DIR)/$(RUN)_out_dir
-	mkdir -p $(DIR)/$(RUN)_out_dir/chrysalis
+	mkdir -p $(DIR)/$(RUN)_out_dir/chrysalis/read_partitions
+	mkdir -p $(DIR)/$(RUN)_out_dir/read_partitions
+
 
 $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa: $(READ1) $(READ2)
 	seqtk mergepe $(READ1) $(READ2) \
@@ -82,5 +86,60 @@ $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out:$(DIR)/$(RUN)_out_dir/chry
 
 $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out
 	/usr/bin/sort --parallel=6 -T . -S 10G -k 1,1n $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out > $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort 2>/dev/null
+
+$(DIR)/$(RUN)_out_dir/partitioned_reads.files.list:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort
+	cat $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort | sort -k1,1 -u | awk '{print "$(DIR)/$(RUN)_out_dir/read_partitions/c"$$1".trinity.reads.fa"}' > $(DIR)/$(RUN)_out_dir/partitioned_reads.files.list
+
+$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds:$(DIR)/$(RUN)_out_dir/partitioned_reads.files.list
+	/share/trinityrnaseq/util/support_scripts/GG_write_trinity_cmds.pl --reads_list_file partitioned_reads.files.list --CPU 1 --max_memory 1G  --full_cleanup --seqType fq --trinity_complete > $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
+
+
+
+
+/share/trinityrnaseq/trinity-plugins/parafly/bin/ParaFly -c recursive_trinity.cmds -CPU $(CPU) -v
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
