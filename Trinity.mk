@@ -100,6 +100,8 @@ $(DIR)/$(RUN)_out_dir/Trinity.fasta:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 	@echo --------------------------------------------------------------------------------
 	@echo ------------ Trinity Phase 2: Assembling Clusters of Reads ---------------------
 	@echo --------------------------------------------------------------------------------
+	@echo \n\n\n\
+
 	$(TRINDIR)/trinity-plugins/parafly/bin/ParaFly -c $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds -CPU $(CPU) -v
 	find read_partitions/  -name '*inity.fasta'  | $(TRINDIR)/util/support_scripts/partitioned_trinity_aggregator.pl TRINITY_DN > $(DIR)/$(RUN)_out_dir/Trinity.fasta
 

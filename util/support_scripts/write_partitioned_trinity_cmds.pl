@@ -71,7 +71,7 @@ while (<$fh>) {
     
     my $file = pop @x;
     
-    my $cmd = "$FindBin::Bin/../../Trinity --single \"$file\" --output \"$file.out\" $trin_args ";
+    my $cmd = "$FindBin::Bin/../../Trinity.mk READ1=\"$file\" RUN=\"$file.out\" CPU=1  ";
     
     print "$cmd\n";
 }
