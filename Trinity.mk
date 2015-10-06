@@ -198,6 +198,6 @@ $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out:
 
 #/share/trinityrnaseq/trinity-plugins/parafly/bin/ParaFly -c /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/butterfly_commands -shuffle -CPU 1 -failed_cmds failed_butterfly_commands.50578.txt
 bfly:
-	java -Xmx $(bflyHeapSpaceMax) -Xms $(bflyHeapSpaceInit) -XX:ParallelGCThreads $b(flyGCThreads) -jar $(TRINDIR)/Butterfly/Butterfly.jar -N 100000 -L 200 -F 200 -C $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out
+	java -Xmx $(bflyHeapSpaceMax) -Xms $(bflyHeapSpaceInit) -XX:ParallelGCThreads $(bflyGCThreads) -jar $(TRINDIR)/Butterfly/Butterfly.jar -N 100000 -L 200 -F 200 -C $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out
 
 
