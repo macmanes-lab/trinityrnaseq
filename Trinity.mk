@@ -185,17 +185,18 @@ $(RUN)/chrysalis/component_base_listing.txt:
 		--deBruijns $(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn \
 		--componentReads $(RUN)/chrysalis/readsToComponents.out.sort -N 1000 -L 200
 
+#/share/trinityrnaseq/trinity-plugins/parafly/bin/ParaFly -c /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/quantifyGraph_commands -CPU 1 -failed_cmds failed_quantify_graph_commands.50578.txt -shuffle
+
 #DONE!!
 $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out:
 	/share/trinityrnaseq/Chrysalis/QuantifyGraph -g $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.tmp  \
 		-i $(RUN)/chrysalis/Component_bins/Cbin0//c0.reads.tmp \
 		-o $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out -max_reads 200000  -k 24
 
-#/share/trinityrnaseq/trinity-plugins/parafly/bin/ParaFly -c /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/quantifyGraph_commands -CPU 1 -failed_cmds failed_quantify_graph_commands.50578.txt -shuffle
 
 #/share/trinityrnaseq/trinity-plugins/parafly/bin/ParaFly -c /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/butterfly_commands -shuffle -CPU 1 -failed_cmds failed_butterfly_commands.50578.txt
 
-
+java -Xmx$bflyHeapSpaceMax -Xms$bflyHeapSpaceInit -XX:ParallelGCThreads=$bflyGCThreads -jar $(TRINDIR)/Butterfly.jar -N 100000 -L 200 -F 200 -C $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out
 
 
 
