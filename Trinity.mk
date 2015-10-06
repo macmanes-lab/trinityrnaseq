@@ -19,17 +19,19 @@ KMER_SIZE=25
 jelly_hash_size=10G
 grid_node_max_memory=1G
 MIN_LEN=200
-
+max_mem_reads=10000000
 TRINITY ?= $(shell which 'Trinity.mk')
 TRINDIR := $(dir $(firstword $(TRINITY)))
-PATH:=$(MAKEDIR):$(PATH)
+PATH := $(MAKEDIR):$(PATH)
 JELLYFISH_DIR := $(TRINDIR)/trinity-plugins/jellyfish/bin/
 TRIMMOMATIC_DIR := $(TRINDIR)/trinity-plugins/Trimmomatic/
 
 
 all: mkdirs $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100 \
-	$(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam \
-	$(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt $(DIR)/$(RUN)_out_dir/chrysalis/GraphFromIwormFasta.out
+	$(DIR)/$(RUN)_out_dir/chrysalis/$(RUN)_bwa_index.sa $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam \
+	$(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt $(DIR)/$(RUN)_out_dir/chrysalis/GraphFromIwormFasta.out \
+	$(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out \
+	$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort
 
 
 mkdirs:
@@ -51,7 +53,7 @@ $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100:$(DIR)/$(RUN)_out_
 	$(TRINDIR)/util/misc/fasta_filter_by_min_length.pl $(DIR)/$(RUN)_out_dir/inchworm.K25.L25.DS.fa 100 \
 	> $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
 
-$(DIR)/$(RUN)_out_dir/$(RUN)_bwa_index.sa :$(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
+$(DIR)/$(RUN)_out_dir/chrysalis/$(RUN)_bwa_index.sa:$(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
 	cd $(DIR)/$(RUN)_out_dir/chrysalis/ && \
 	bwa index -p $(RUN)_bwa_index $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
 
@@ -71,3 +73,14 @@ $(DIR)/$(RUN)_out_dir/chrysalis/GraphFromIwormFasta.out:$(DIR)/$(RUN)_out_dir/ch
 	$(TRINDIR)/Chrysalis/GraphFromFasta -i $(DIR)/$(RUN)_out_dir/inchworm.K25.L25.DS.fa -r $(DIR)/$(RUN)_out_dir/both.fq \
 	-min_contig_length $(MIN_LEN) -min_glue 2 -glue_factor 0.05 -min_iso_ratio 0.05 \
 	-t $(CPU) -k 24 -kk 48  -scaffolding $(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt  > $(DIR)/$(RUN)_out_dir/chrysalis/GraphFromIwormFasta.out
+
+$(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta:$(DIR)/$(RUN)_out_dir/chrysalis/GraphFromIwormFasta.out
+	$(TRINDIR)/Chrysalis/CreateIwormFastaBundle -i $(DIR)/$(RUN)_out_dir/chrysalis/GraphFromIwormFasta.out -o $(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta -min $(MIN_LEN) 2>/dev/null
+
+$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out:$(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta
+	$(TRINDIR)/Chrysalis/ReadsToTranscripts -i $(DIR)/$(RUN)_out_dir/both.fq -f $(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta -o $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out -t $(CPU) -max_mem_reads $(max_mem_reads)  2>/dev/null
+
+$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out
+	/usr/bin/sort --parallel=6 -T . -S 10G -k 1,1n $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out > $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort 2>/dev/null
+
+
