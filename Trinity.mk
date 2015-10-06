@@ -26,14 +26,23 @@ JELLYFISH_DIR := $(TRINDIR)/trinity-plugins/jellyfish/bin/
 TRIMMOMATIC_DIR := $(TRINDIR)/trinity-plugins/Trimmomatic/
 
 
-all: mkdirs jellyfish $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100 \
-	$(DIR)/$(RUN)_out_dir/chrysalis/$(RUN)_bwa_index.sa $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam \
-	$(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt $(DIR)/$(RUN)_out_dir/chrysalis/GraphFromIwormFasta.out \
-	$(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out \
-	$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort $(DIR)/$(RUN)_out_dir/partitioned_reads.files.list \
-	$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds $(DIR)/$(RUN)_out_dir/Trinity.fasta
+all: mkdirs jellyfish inchworm index bwa iworm_scaffolds graph bundle read2comp sort list recursive
+step2: inchworm2 index bwa iworm_scaffolds graph bundle read2comp sort list concatenate
 
 jellyfish:$(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa
+inchworm $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
+index:$(DIR)/$(RUN)_out_dir/chrysalis/$(RUN)_bwa_index.sa
+bwa:$(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam
+iworm_scaffolds:$(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt
+graph:$(DIR)/$(RUN)_out_dir/chrysalis/GraphFromIwormFasta.out
+bundle:$(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta
+read2comp:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out
+sort:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort
+list:$(DIR)/$(RUN)_out_dir/partitioned_reads.files.list
+recursive:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
+concatenate:$(DIR)/$(RUN)_out_dir/Trinity.fasta
+inchworm2: $(DIR)/$(RUN)_out_dir/read_partitions/inchworm.K25.L25.DS.fa
+
 
 mkdirs:
 	mkdir -p $(DIR)/$(RUN)_out_dir
@@ -106,6 +115,11 @@ $(DIR)/$(RUN)_out_dir/Trinity.fasta:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 	$(TRINDIR)/trinity-plugins/parafly/bin/ParaFly -c $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds -CPU $(CPU) -v
 	find read_partitions/  -name '*inity.fasta'  | $(TRINDIR)/util/support_scripts/partitioned_trinity_aggregator.pl TRINITY_DN > $(DIR)/$(RUN)_out_dir/Trinity.fasta
 
+
+$(DIR)/$(RUN)_out_dir/read_partitions/inchworm.K25.L25.DS.fa:
+	cd $(DIR)/$(RUN)_out_dir/ && \
+	$(TRINDIR)/Inchworm/bin/inchworm --kmers jellyfish.kmers.fa --run_inchworm -K $(KMER_SIZE) -L $(KMER_SIZE) --monitor 1 \
+	--DS --num_threads $(IWORM_CPU) --PARALLEL_IWORM  > $(DIR)/$(RUN)_out_dir/read_partitions/inchworm.K25.L25.DS.fa 2>/dev/null
 
 
 
