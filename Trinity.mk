@@ -46,7 +46,7 @@ graph2:$(RUN)/chrysalis/GraphFromIwormFasta.out
 bundle2:$(RUN)/bundled_iworm_contigs.fasta
 read2comp2:$(RUN)/readsToComponents.out
 sort2:$(RUN)/chrysalis/readsToComponents.out.sort
-FastaToDeBruijn:$(DIR)/$(RUN)_out_dir/read_partitions/bundled_iworm_contigs.fasta.deBruijn
+FastaToDeBruijn:$(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn
 
 
 mkdirs:
@@ -163,14 +163,18 @@ $(RUN)/readsToComponents.out:
 #sort2
 
 $(RUN)/chrysalis/readsToComponents.out.sort:
-	/usr/bin/sort --parallel=6 -T . -S 10G -k 1,1n $(RUN)/chrysalis/readsToComponents.out > $(RUN)/chrysalis/readsToComponents.out.sort 2>/dev/null
+	/usr/bin/sort --parallel=6 -T . -S 10G -k 1,1n \
+	$(RUN)/chrysalis/readsToComponents.out \
+	> $(RUN)/chrysalis/readsToComponents.out.sort 2>/dev/null
 
 #/share/trinityrnaseq/Inchworm/bin//FastaToDeBruijn --fasta /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta -K 24 --graph_per_record --threads 1 > /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta.deBruijn
 
 #FastaToDeBruijn
-$(DIR)/$(RUN)_out_dir/read_partitions/bundled_iworm_contigs.fasta.deBruijn:
-	$(TRINDIR)/Inchworm/bin//FastaToDeBruijn --fasta $(DIR)/$(RUN)_out_dir/read_partitions/bundled_iworm_contigs.fasta \
-	-K 24 --graph_per_record --threads $(CPU) > $(DIR)/$(RUN)_out_dir/read_partitions/bundled_iworm_contigs.fasta.deBruijn
+$(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn:
+	$(TRINDIR)/Inchworm/bin//FastaToDeBruijn \
+	--fasta $(RUN)/chrysalis/bundled_iworm_contigs.fasta \
+	-K 24 --graph_per_record --threads $(CPU) \
+	> $(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn
 
 #/share/trinityrnaseq/util/support_scripts/partition_chrysalis_graphs_n_reads.pl --deBruijns /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta.deBruijn --componentReads /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/readsToComponents.out.sort -N 1000 -L 200
 
