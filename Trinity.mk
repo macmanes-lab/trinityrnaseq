@@ -32,7 +32,7 @@ all: mkdirs $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa $(DIR)/$(RUN)_out_dir/chrys
 	$(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt $(DIR)/$(RUN)_out_dir/chrysalis/GraphFromIwormFasta.out \
 	$(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out \
 	$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort $(DIR)/$(RUN)_out_dir/partitioned_reads.files.list \
-	$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
+	$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds $(DIR)/$(RUN)_out_dir/Trinity.fasta
 
 
 
@@ -92,11 +92,16 @@ $(DIR)/$(RUN)_out_dir/partitioned_reads.files.list:$(DIR)/$(RUN)_out_dir/chrysal
 	cat $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort | sort -k1,1 -u | awk '{print "$(DIR)/$(RUN)_out_dir/read_partitions/c"$$1".trinity.reads.fa"}' > $(DIR)/$(RUN)_out_dir/partitioned_reads.files.list
 
 $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds:$(DIR)/$(RUN)_out_dir/partitioned_reads.files.list
-	$(TRINDIR)/util/support_scripts/GG_write_trinity_cmds.pl --reads_list_file $(DIR)/$(RUN)_out_dir/partitioned_reads.files.list --CPU 1 --max_memory 2G  --full_cleanup --seqType fq \
+	$(TRINDIR)/util/support_scripts/write_partitioned_trinity_cmds.pl --reads_list_file $(DIR)/$(RUN)_out_dir/partitioned_reads.files.list --CPU 1 --max_memory 2G  --full_cleanup --seqType fq \
 	--trinity_complete > $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 
-butterfly:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
-	/share/trinityrnaseq/trinity-plugins/parafly/bin/ParaFly -c $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds -CPU $(CPU) -v
+$(DIR)/$(RUN)_out_dir/Trinity.fasta:$(DIR)/$(RUN)_out_dir/recursive_trinity.
+	@echo \n\n\n\
+	@echo --------------------------------------------------------------------------------
+	@echo ------------ Trinity Phase 2: Assembling Clusters of Reads ---------------------
+	@echo --------------------------------------------------------------------------------
+	$(TRINDIR)/trinity-plugins/parafly/bin/ParaFly -c $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds -CPU $(CPU) -v
+	find read_partitions/  -name '*inity.fasta'  | $(TRINDIR)/util/support_scripts/partitioned_trinity_aggregator.pl TRINITY_DN > $(DIR)/$(RUN)_out_dir/Trinity.fasta
 
 
 
