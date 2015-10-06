@@ -47,7 +47,7 @@ bundle2:$(RUN)/bundled_iworm_contigs.fasta
 read2comp2:$(RUN)/readsToComponents.out
 sort2:$(RUN)/chrysalis/readsToComponents.out.sort
 FastaToDeBruijn:$(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn
-
+partition:$(RUN)/chrysalis/component_base_listing.txt
 
 mkdirs:
 	mkdir -p $(DIR)/$(RUN)_out_dir
@@ -178,7 +178,7 @@ $(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn:
 
 #/share/trinityrnaseq/util/support_scripts/partition_chrysalis_graphs_n_reads.pl --deBruijns /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta.deBruijn --componentReads /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/readsToComponents.out.sort -N 1000 -L 200
 
-partition:
+$(RUN)/chrysalis/component_base_listing.txt:
 	$(TRINDIR)/util/support_scripts/partition_chrysalis_graphs_n_reads.pl \
 	--deBruijns $(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn \
 	--componentReads $(RUN)/chrysalis/readsToComponents.out.sort -N 1000 -L 200
