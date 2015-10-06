@@ -27,7 +27,7 @@ TRIMMOMATIC_DIR := $(TRINDIR)/trinity-plugins/Trimmomatic/
 
 
 all: mkdirs jellyfish inchworm index bwa iworm_scaffolds graph bundle read2comp sort list recursive
-step2: inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn list concatenate
+step2: inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn partition
 
 jellyfish:$(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa
 inchworm: $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
@@ -177,6 +177,13 @@ $(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn:
 	> $(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn
 
 #/share/trinityrnaseq/util/support_scripts/partition_chrysalis_graphs_n_reads.pl --deBruijns /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta.deBruijn --componentReads /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/readsToComponents.out.sort -N 1000 -L 200
+
+partition:
+	$(TRINDIR)/util/support_scripts/partition_chrysalis_graphs_n_reads.pl \
+	--deBruijns $(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn \
+	--componentReads $(RUN)/chrysalis/readsToComponents.out.sort -N 1000 -L 200
+
+
 
 #/share/trinityrnaseq/trinity-plugins/parafly/bin/ParaFly -c /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/quantifyGraph_commands -CPU 1 -failed_cmds failed_quantify_graph_commands.50578.txt -shuffle
 
