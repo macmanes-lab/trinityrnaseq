@@ -43,6 +43,11 @@ mkdirs:
 
 
 $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa: $(READ1) $(READ2)
+	@echo \n\n\n\
+	@echo --------------------------------------------------------------------------------
+	@echo ------------ Skewer Trimming > JellyFish ---------------------
+	@echo --------------------------------------------------------------------------------
+	@echo \n\n\n\
 	seqtk mergepe $(READ1) $(READ2) \
 	| skewer -m pe -l $(KMER_SIZE) --quiet -Q $(TRIM) -t $(CPU) -x $(TRIMMOMATIC_DIR)/adapters/TruSeq3-PE.fa - -1 \
 	| tee $(DIR)/$(RUN)_out_dir/both.fq \
@@ -101,7 +106,6 @@ $(DIR)/$(RUN)_out_dir/Trinity.fasta:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 	@echo ------------ Trinity Phase 2: Assembling Clusters of Reads ---------------------
 	@echo --------------------------------------------------------------------------------
 	@echo \n\n\n\
-
 	$(TRINDIR)/trinity-plugins/parafly/bin/ParaFly -c $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds -CPU $(CPU) -v
 	find read_partitions/  -name '*inity.fasta'  | $(TRINDIR)/util/support_scripts/partitioned_trinity_aggregator.pl TRINITY_DN > $(DIR)/$(RUN)_out_dir/Trinity.fasta
 
