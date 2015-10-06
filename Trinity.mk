@@ -43,7 +43,7 @@ recursive:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 concatenate:$(DIR)/$(RUN)_out_dir/Trinity.fasta
 inchworm2: $(RUN)/inchworm.K25.L25.DS.fa
 graph2:$(RUN)/chrysalis/GraphFromIwormFasta.out
-bundle2:$(DIR)/$(RUN)_out_dir/read_partitions/bundled_iworm_contigs.fasta
+bundle2:$(RUN)/bundled_iworm_contigs.fasta
 read2comp2:$(DIR)/$(RUN)_out_dir/read_partitions/readsToComponents.out
 sort2:$(DIR)/$(RUN)_out_dir/read_partitions/readsToComponents.out.sort
 FastaToDeBruijn:$(DIR)/$(RUN)_out_dir/read_partitions/bundled_iworm_contigs.fasta.deBruijn
@@ -132,6 +132,7 @@ $(RUN)/inchworm.K25.L25.DS.fa:
 #/share/trinityrnaseq/Chrysalis/GraphFromFasta -i /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/inchworm.K25.L25.DS.fa -r single.fa -min_contig_length 200 -min_glue 2 -glue_factor 0.05 -min_iso_ratio 0.05 -t 1 -k 24 -kk 48  > /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/GraphFromIwormFasta.out
 
 #graph2
+#DONE!
 $(RUN)/chrysalis/GraphFromIwormFasta.out:
 	$(TRINDIR)/Chrysalis/GraphFromFasta -i $(RUN)/inchworm.K25.L25.DS.fa \
 	-r $(READ1) -min_contig_length $(MIN_LEN) -min_glue 2 -glue_factor 0.05 -min_iso_ratio 0.05 \
@@ -140,8 +141,9 @@ $(RUN)/chrysalis/GraphFromIwormFasta.out:
 
 #/share/trinityrnaseq/Chrysalis/CreateIwormFastaBundle -i /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/GraphFromIwormFasta.out -o /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta -min 200
 
-$(DIR)/$(RUN)_out_dir/read_partitions/bundled_iworm_contigs.fasta:
-	$(TRINDIR)/Chrysalis/CreateIwormFastaBundle -i $(DIR)/$(RUN)_out_dir/read_partitions/GraphFromIwormFasta.out -o $(DIR)/$(RUN)_out_dir/read_partitions/bundled_iworm_contigs.fasta -min $(MIN_LEN) 2>/dev/null
+#bundle2
+$(RUN)/bundled_iworm_contigs.fasta:
+	$(TRINDIR)/Chrysalis/CreateIwormFastaBundle -i $(RUN)/GraphFromIwormFasta.out -o $(RUN)/bundled_iworm_contigs.fasta -min $(MIN_LEN) 2>/dev/null
 
 #/share/trinityrnaseq/Chrysalis/ReadsToTranscripts -i single.fa -f /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta -o /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/readsToComponents.out -t 1 -max_mem_reads 50000000
 
