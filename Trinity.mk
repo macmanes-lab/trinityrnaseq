@@ -133,9 +133,10 @@ $(RUN)/inchworm.K25.L25.DS.fa:
 
 #graph2
 $(RUN)/chrysalis/GraphFromIwormFasta.out:
-	$(TRINDIR)/Chrysalis/GraphFromFasta -i $(RUN)/inchworm.K25.L25.DS.fa -r $(READ1) \
-	-min_contig_length $(MIN_LEN) -min_glue 2 -glue_factor 0.05 -min_iso_ratio 0.05 \
-	-t $(CPU) -k 24 -kk 48  -scaffolding $(RUN)/chrysalis/iworm_scaffolds.txt  > $(RUN)/chrysalis/GraphFromIwormFasta.out
+	$(TRINDIR)/Chrysalis/GraphFromFasta -i $(RUN)/inchworm.K25.L25.DS.fa \
+	-r $(READ1) -min_contig_length $(MIN_LEN) -min_glue 2 -glue_factor 0.05 -min_iso_ratio 0.05 \
+	-t $(CPU) -k 24 -kk 48   \
+	> $(RUN)/chrysalis/GraphFromIwormFasta.out
 
 #/share/trinityrnaseq/Chrysalis/CreateIwormFastaBundle -i /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/GraphFromIwormFasta.out -o /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta -min 200
 
