@@ -71,7 +71,7 @@ while (<$fh>) {
     
     my $file = pop @x;
     
-    my $cmd = "$FindBin::Bin/../../Trinity.mk step2 READ1=$file RUN=$file.out CPU=1 ";
+    my $cmd = "Trinity.mk step2 READ1=$file RUN=$file.out CPU=1 ";
     
     print "$cmd\n";
 }
