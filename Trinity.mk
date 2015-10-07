@@ -32,8 +32,7 @@ num_reads=100000
 
 .SILENT:inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn partition qgraph bfly step2
 
-all: mkdirs jellyfish inchworm index bwa iworm_scaffolds graph bundle read2comp sort list make_recursive run_recursive concatenate
-step2: inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn partition qgraph bfly
+all: mkdirs jellyfish inchworm index bwa iworm_scaffolds graph bundle read2comp sort list make_recursive run_recursive
 
 jellyfish:$(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa
 inchworm: $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100

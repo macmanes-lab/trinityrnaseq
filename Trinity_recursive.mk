@@ -32,7 +32,7 @@ num_reads=100000
 
 .SILENT:inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn partition qgraph bfly step2
 
-step2: inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn partition qgraph bfly
+step2: inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn partition qgraph bfly concatenate
 
 inchworm2: $(RUN)/inchworm.K25.L25.DS.fa
 graph2:$(RUN)/chrysalis/GraphFromIwormFasta.out
