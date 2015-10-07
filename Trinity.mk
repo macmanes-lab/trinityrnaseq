@@ -43,7 +43,7 @@ bundle:$(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta
 read2comp:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out
 sort:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort
 list:$(DIR)/$(RUN)_out_dir/partitioned_reads.files.list
-recursive:$(DIR)/$(RUN)_out_dir/Trinity.fasta
+recursive:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 concatenate:$(DIR)/$(RUN)_out_dir/Trinity.fasta
 inchworm2: $(RUN)/inchworm.K25.L25.DS.fa
 graph2:$(RUN)/chrysalis/GraphFromIwormFasta.out
@@ -87,6 +87,11 @@ $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100:$(DIR)/$(RUN)_out_
 	> $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
 
 $(DIR)/$(RUN)_out_dir/chrysalis/$(RUN)_bwa_index.sa:$(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
+	@echo -e "\n\n\n"
+	@echo --------------------------------------------------------------------------------
+	@echo -------------------------- Trinity Phase 1: BWA --------------------------------
+	@echo --------------------------------------------------------------------------------
+	@echo -e "\n\n\n"
 	cd $(DIR)/$(RUN)_out_dir/chrysalis/ && \
 	bwa index -p $(RUN)_bwa_index $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100
 
@@ -98,6 +103,11 @@ $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam:$(DIR)/$(RUN)_out_di
 	| samtools sort -l 0 -O bam -T tmp -@ $(CPU) -m $(grid_node_max_memory) -o $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam -
 
 $(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt:$(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam
+	@echo -e "\n\n\n"
+	@echo --------------------------------------------------------------------------------
+	@echo -------------------- Trinity Phase 1: IWORM SCAFFOLD ---------------------------
+	@echo --------------------------------------------------------------------------------
+	@echo -e "\n\n\n"
 	$(TRINDIR)/util/support_scripts/scaffold_iworm_contigs.pl \
 	$(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam \
 	$(DIR)/$(RUN)_out_dir/inchworm.K25.L25.DS.fa > $(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt
