@@ -32,7 +32,7 @@ num_reads=100000
 
 .SILENT:inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn partition qgraph bfly step2
 
-all: mkdirs jellyfish inchworm index bwa iworm_scaffolds graph bundle read2comp sort list recursive concatenate
+all: mkdirs jellyfish inchworm index bwa iworm_scaffolds graph bundle read2comp sort list make_recursive run_recursive concatenate
 step2: inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn partition qgraph bfly
 
 jellyfish:$(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa
@@ -45,7 +45,7 @@ bundle:$(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta
 read2comp:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out
 sort:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort
 list:$(DIR)/$(RUN)_out_dir/partitioned_reads.files.list
-
+make_recursive:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 inchworm2: $(RUN)/inchworm.K25.L25.DS.fa
 graph2:$(RUN)/chrysalis/GraphFromIwormFasta.out
 bundle2:$(RUN)/bundled_iworm_contigs.fasta
@@ -133,7 +133,7 @@ $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds:$(DIR)/$(RUN)_out_dir/partitioned_r
 	$(TRINDIR)/util/support_scripts/write_partitioned_trinity_cmds.pl --reads_list_file $(DIR)/$(RUN)_out_dir/partitioned_reads.files.list --CPU 1 --max_memory 2G  --full_cleanup --seqType fq \
 	--trinity_complete > $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 
-recursive:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
+run_recursive:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 	@echo -e '\n\n'
 	@echo --------------------------------------------------------------------------------
 	@echo ------------ Trinity Phase 2: Assembling Clusters of Reads ---------------------
