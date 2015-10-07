@@ -45,8 +45,7 @@ bundle:$(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta
 read2comp:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out
 sort:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort
 list:$(DIR)/$(RUN)_out_dir/partitioned_reads.files.list
-recursive:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
-concatenate:$(DIR)/$(RUN)_out_dir/Trinity.fasta
+
 inchworm2: $(RUN)/inchworm.K25.L25.DS.fa
 graph2:$(RUN)/chrysalis/GraphFromIwormFasta.out
 bundle2:$(RUN)/bundled_iworm_contigs.fasta
@@ -134,13 +133,15 @@ $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds:$(DIR)/$(RUN)_out_dir/partitioned_r
 	$(TRINDIR)/util/support_scripts/write_partitioned_trinity_cmds.pl --reads_list_file $(DIR)/$(RUN)_out_dir/partitioned_reads.files.list --CPU 1 --max_memory 2G  --full_cleanup --seqType fq \
 	--trinity_complete > $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 
-$(DIR)/$(RUN)_out_dir/Trinity.fasta:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
+recursive:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 	@echo -e '\n\n'
 	@echo --------------------------------------------------------------------------------
 	@echo ------------ Trinity Phase 2: Assembling Clusters of Reads ---------------------
 	@echo --------------------------------------------------------------------------------
 	@echo -e '\n\n'
-	$(TRINDIR)/trinity-plugins/parafly/bin/ParaFly -c $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds -CPU $(CPU) -v
+	$(TRINDIR)/trinity-plugins/parafly/bin/ParaFly -c $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds -CPU $(CPU)
+
+concatenate:
 	find read_partitions/  -name '*inity.fasta'  | $(TRINDIR)/util/support_scripts/partitioned_trinity_aggregator.pl TRINITY_DN > $(DIR)/$(RUN)_out_dir/Trinity.fasta
 
 
