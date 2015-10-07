@@ -61,11 +61,11 @@ mkdirs:
 
 
 $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa: $(READ1) $(READ2)
-	@echo '\n\n'
+	@echo "\n\n\n"
 	@echo --------------------------------------------------------------------------------
 	@echo -------------------- Trinity Phase 1: Cluster Reads ----------------------------
 	@echo --------------------------------------------------------------------------------
-	@echo '\n\n'
+	@echo "\n\n\n"
 	seqtk mergepe $(READ1) $(READ2) \
 	| skewer -m pe -l $(KMER_SIZE) --quiet -Q $(TRIM) -t $(CPU) -x $(TRIMMOMATIC_DIR)/adapters/TruSeq3-PE.fa - -1 \
 	| tee $(DIR)/$(RUN)_out_dir/both.fq \
