@@ -43,7 +43,7 @@ bundle:$(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta
 read2comp:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out
 sort:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort
 list:$(DIR)/$(RUN)_out_dir/partitioned_reads.files.list
-recursive:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
+recursive:$(DIR)/$(RUN)_out_dir/Trinity.fasta
 concatenate:$(DIR)/$(RUN)_out_dir/Trinity.fasta
 inchworm2: $(RUN)/inchworm.K25.L25.DS.fa
 graph2:$(RUN)/chrysalis/GraphFromIwormFasta.out
@@ -61,6 +61,11 @@ mkdirs:
 
 
 $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa: $(READ1) $(READ2)
+	@echo '\n\n'
+	@echo --------------------------------------------------------------------------------
+	@echo -------------------- Trinity Phase 1: Cluster Reads ----------------------------
+	@echo --------------------------------------------------------------------------------
+	@echo '\n\n'
 	seqtk mergepe $(READ1) $(READ2) \
 	| skewer -m pe -l $(KMER_SIZE) --quiet -Q $(TRIM) -t $(CPU) -x $(TRIMMOMATIC_DIR)/adapters/TruSeq3-PE.fa - -1 \
 	| tee $(DIR)/$(RUN)_out_dir/both.fq \
