@@ -30,7 +30,7 @@ bflyGCThreads=2
 max_frag_len = 1000
 num_reads=100000
 
-all: mkdirs jellyfish inchworm index bwa iworm_scaffolds graph bundle read2comp sort list recursive
+all: mkdirs jellyfish inchworm index bwa iworm_scaffolds graph bundle read2comp sort list recursive concatenate
 step2: inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn partition qgraph bfly
 
 jellyfish:$(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa
@@ -76,11 +76,6 @@ $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa: $(READ1) $(READ2)
 	seqtk seq -A $(DIR)/$(RUN)_out_dir/both.fq > $(DIR)/$(RUN)_out_dir/both.fa &
 
 $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100:$(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa
-	@echo -e "\n\n\n"
-	@echo --------------------------------------------------------------------------------
-	@echo ----------------------- Trinity Phase 1: Inchworm ------------------------------
-	@echo --------------------------------------------------------------------------------
-	@echo -e "\n\n\n"
 	cd $(DIR)/$(RUN)_out_dir/ && \
 	$(TRINDIR)/Inchworm/bin/inchworm --kmers jellyfish.kmers.fa --run_inchworm -K $(KMER_SIZE) -L $(KMER_SIZE) --monitor 1 \
 	--DS --keep_tmp_files --num_threads $(IWORM_CPU) --PARALLEL_IWORM  > $(DIR)/$(RUN)_out_dir/inchworm.K25.L25.DS.fa.tmp 2>/dev/null
@@ -105,11 +100,6 @@ $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam:$(DIR)/$(RUN)_out_di
 	| samtools sort -l 0 -O bam -T tmp -@ $(CPU) -m $(grid_node_max_memory) -o $(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam -
 
 $(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt:$(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam
-	@echo -e "\n\n\n"
-	@echo --------------------------------------------------------------------------------
-	@echo -------------------- Trinity Phase 1: IWORM SCAFFOLD ---------------------------
-	@echo --------------------------------------------------------------------------------
-	@echo -e "\n\n\n"
 	$(TRINDIR)/util/support_scripts/scaffold_iworm_contigs.pl \
 	$(DIR)/$(RUN)_out_dir/chrysalis/iworm.bowtie.nameSorted.bam \
 	$(DIR)/$(RUN)_out_dir/inchworm.K25.L25.DS.fa > $(DIR)/$(RUN)_out_dir/chrysalis/iworm_scaffolds.txt
@@ -123,6 +113,11 @@ $(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta:$(DIR)/$(RUN)_out_di
 	$(TRINDIR)/Chrysalis/CreateIwormFastaBundle -i $(DIR)/$(RUN)_out_dir/chrysalis/GraphFromIwormFasta.out -o $(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta -min $(MIN_LEN) 2>/dev/null
 
 $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out:$(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta
+	@echo -e "\n\n\n"
+	@echo --------------------------------------------------------------------------------
+	@echo ------------------ Trinity Phase 1: ReadsToTranscripts -------------------------
+	@echo --------------------------------------------------------------------------------
+	@echo -e "\n\n\n"
 	$(TRINDIR)/Chrysalis/ReadsToTranscripts -i $(DIR)/$(RUN)_out_dir/both.fa -f $(DIR)/$(RUN)_out_dir/chrysalis/bundled_iworm_contigs.fasta -o $(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out \
 	-t $(CPU) -max_mem_reads $(max_mem_reads)  2>/dev/null
 
