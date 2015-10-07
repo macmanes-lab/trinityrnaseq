@@ -46,14 +46,7 @@ read2comp:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out
 sort:$(DIR)/$(RUN)_out_dir/chrysalis/readsToComponents.out.sort
 list:$(DIR)/$(RUN)_out_dir/partitioned_reads.files.list
 make_recursive:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
-inchworm2: $(RUN)/inchworm.K25.L25.DS.fa
-graph2:$(RUN)/chrysalis/GraphFromIwormFasta.out
-bundle2:$(RUN)/bundled_iworm_contigs.fasta
-read2comp2:$(RUN)/readsToComponents.out
-sort2:$(RUN)/chrysalis/readsToComponents.out.sort
-FastaToDeBruijn:$(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn
-partition:$(RUN)/chrysalis/component_base_listing.txt
-qgraph:$(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out
+
 
 
 mkdirs:
@@ -140,89 +133,4 @@ run_recursive:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 	@echo --------------------------------------------------------------------------------
 	@echo -e '\n\n'
 	$(TRINDIR)/trinity-plugins/parafly/bin/ParaFly -c $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds -CPU $(CPU)
-
-concatenate:
-	find read_partitions/  -name '*inity.fasta'  | $(TRINDIR)/util/support_scripts/partitioned_trinity_aggregator.pl TRINITY_DN > $(DIR)/$(RUN)_out_dir/Trinity.fasta
-
-
-#/share/trinityrnaseq/Inchworm/bin//inchworm --reads single.fa --run_inchworm -K 25 -L 25 --monitor 1  --DS  --num_threads 1  --PARALLEL_IWORM  > /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/inchworm.K25.L25.DS.fa.tmp
-#DONE!!!
-$(RUN)/inchworm.K25.L25.DS.fa:
-	mkdir -p $(RUN) && cd $(RUN) && \
-	$(TRINDIR)/Inchworm/bin/inchworm --reads $(READ1) \
-	--run_inchworm -K $(KMER_SIZE) -L $(KMER_SIZE) --monitor 1 \
-	--DS --num_threads 1 --PARALLEL_IWORM  > $(RUN)/inchworm.K25.L25.DS.fa 2>/dev/null
-
-#/share/trinityrnaseq/Chrysalis/GraphFromFasta -i /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/inchworm.K25.L25.DS.fa -r single.fa -min_contig_length 200 -min_glue 2 -glue_factor 0.05 -min_iso_ratio 0.05 -t 1 -k 24 -kk 48  > /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/GraphFromIwormFasta.out
-
-#graph2
-#DONE!
-$(RUN)/chrysalis/GraphFromIwormFasta.out:
-	mkdir -p $(RUN)/chrysalis/ && \
-	$(TRINDIR)/Chrysalis/GraphFromFasta -i $(RUN)/inchworm.K25.L25.DS.fa \
-	-r $(READ1) -min_contig_length $(MIN_LEN) -min_glue 2 -glue_factor 0.05 -min_iso_ratio 0.05 \
-	-t $(CPU) -k 24 -kk 48   \
-	> $(RUN)/chrysalis/GraphFromIwormFasta.out
-
-#/share/trinityrnaseq/Chrysalis/CreateIwormFastaBundle -i /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/GraphFromIwormFasta.out -o /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta -min 200
-
-#bundle2
-#DONE!
-$(RUN)/bundled_iworm_contigs.fasta:
-	$(TRINDIR)/Chrysalis/CreateIwormFastaBundle \
-	-i $(RUN)/chrysalis/GraphFromIwormFasta.out \
-	-o $(RUN)/chrysalis/bundled_iworm_contigs.fasta -min $(MIN_LEN) 2>/dev/null
-
-#/share/trinityrnaseq/Chrysalis/ReadsToTranscripts -i single.fa -f /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta -o /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/readsToComponents.out -t 1 -max_mem_reads 50000000
-
-#read2comp2
-#DONE
-$(RUN)/readsToComponents.out:
-	$(TRINDIR)/Chrysalis/ReadsToTranscripts -i $(READ1) \
-	-f $(RUN)/chrysalis/bundled_iworm_contigs.fasta \
-	-o $(RUN)/chrysalis/readsToComponents.out \
-	-t $(CPU) -max_mem_reads $(max_mem_reads)  2>/dev/null
-
-#/usr/bin/sort --parallel=1 -T . -S 1G -k 1,1n /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/readsToComponents.out > /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/readsToComponents.out.sort
-
-#sort2
-
-$(RUN)/chrysalis/readsToComponents.out.sort:
-	/usr/bin/sort --parallel=6 -T . -S 10G -k 1,1n \
-	$(RUN)/chrysalis/readsToComponents.out \
-	> $(RUN)/chrysalis/readsToComponents.out.sort 2>/dev/null
-
-#/share/trinityrnaseq/Inchworm/bin//FastaToDeBruijn --fasta /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta -K 24 --graph_per_record --threads 1 > /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta.deBruijn
-
-#FastaToDeBruijn
-$(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn:
-	$(TRINDIR)/Inchworm/bin//FastaToDeBruijn \
-		--fasta $(RUN)/chrysalis/bundled_iworm_contigs.fasta \
-		-K 24 --graph_per_record --threads $(CPU) \
-		> $(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn
-
-#/share/trinityrnaseq/util/support_scripts/partition_chrysalis_graphs_n_reads.pl --deBruijns /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/bundled_iworm_contigs.fasta.deBruijn --componentReads /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/readsToComponents.out.sort -N 1000 -L 200
-
-$(RUN)/chrysalis/component_base_listing.txt:
-	$(TRINDIR)/util/support_scripts/partition_chrysalis_graphs_n_reads.pl \
-		--deBruijns $(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn \
-		--componentReads $(RUN)/chrysalis/readsToComponents.out.sort -N 1000 -L 200
-
-#/share/trinityrnaseq/trinity-plugins/parafly/bin/ParaFly -c /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/quantifyGraph_commands -CPU 1 -failed_cmds failed_quantify_graph_commands.50578.txt -shuffle
-
-#DONE!!
-$(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out:
-	/share/trinityrnaseq/Chrysalis/QuantifyGraph -g $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.tmp  \
-		-i $(RUN)/chrysalis/Component_bins/Cbin0//c0.reads.tmp \
-		-o $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out -max_reads 200000  -k 24
-
-
-#/share/trinityrnaseq/trinity-plugins/parafly/bin/ParaFly -c /home/macmanes/trinityrnaseq/trinity_out_dir/read_partitions/Fb_0/CBin_0/c32.trinity.reads.fa.out/chrysalis/butterfly_commands -shuffle -CPU 1 -failed_cmds failed_butterfly_commands.50578.txt
-bfly:
-	java -Xmx$(bflyHeapSpaceMax) -Xms$(bflyHeapSpaceInit) \
-	-XX:ParallelGCThreads=$(bflyGCThreads) \
-	-jar $(TRINDIR)/Butterfly/Butterfly.jar \
-	-N $(num_reads) -L $(MIN_LEN) -F $(max_frag_len) \
-	-C $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph
-
 
