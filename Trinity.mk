@@ -30,6 +30,8 @@ bflyGCThreads=2
 max_frag_len = 1000
 num_reads=100000
 
+.SILENT:inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn partition qgraph bfly step2
+
 all: mkdirs jellyfish inchworm index bwa iworm_scaffolds graph bundle read2comp sort list recursive concatenate
 step2: inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn partition qgraph bfly
 
@@ -54,7 +56,6 @@ FastaToDeBruijn:$(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn
 partition:$(RUN)/chrysalis/component_base_listing.txt
 qgraph:$(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out
 
-.SILENT:inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn partition qgraph bfly
 
 mkdirs:
 	mkdir -p $(DIR)/$(RUN)_out_dir
