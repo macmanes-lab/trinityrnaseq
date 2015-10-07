@@ -54,6 +54,8 @@ FastaToDeBruijn:$(RUN)/chrysalis/bundled_iworm_contigs.fasta.deBruijn
 partition:$(RUN)/chrysalis/component_base_listing.txt
 qgraph:$(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out
 
+.SILENT:inchworm2 graph2 bundle2 read2comp2 sort2 FastaToDeBruijn partition qgraph bfly
+
 mkdirs:
 	mkdir -p $(DIR)/$(RUN)_out_dir
 	mkdir -p $(DIR)/$(RUN)_out_dir/chrysalis/
