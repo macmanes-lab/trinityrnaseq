@@ -61,11 +61,11 @@ mkdirs:
 
 
 $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa: $(READ1) $(READ2)
-	@echo "\n\n\n"
+	@echo -e "\n\n\n"
 	@echo --------------------------------------------------------------------------------
-	@echo -------------------- Trinity Phase 1: Cluster Reads ----------------------------
+	@echo ----------------- Trinity Phase 1: Skewer and Jellyfish ------------------------
 	@echo --------------------------------------------------------------------------------
-	@echo "\n\n\n"
+	@echo -e "\n\n\n"
 	seqtk mergepe $(READ1) $(READ2) \
 	| skewer -m pe -l $(KMER_SIZE) --quiet -Q $(TRIM) -t $(CPU) -x $(TRIMMOMATIC_DIR)/adapters/TruSeq3-PE.fa - -1 \
 	| tee $(DIR)/$(RUN)_out_dir/both.fq \
@@ -74,6 +74,11 @@ $(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa: $(READ1) $(READ2)
 	seqtk seq -A $(DIR)/$(RUN)_out_dir/both.fq > $(DIR)/$(RUN)_out_dir/both.fa &
 
 $(DIR)/$(RUN)_out_dir/chrysalis/inchworm.K25.L25.DS.fa.min100:$(DIR)/$(RUN)_out_dir/jellyfish.kmers.fa
+	@echo -e "\n\n\n"
+	@echo --------------------------------------------------------------------------------
+	@echo ----------------------- Trinity Phase 1: Inchworm ------------------------------
+	@echo --------------------------------------------------------------------------------
+	@echo -e "\n\n\n"
 	cd $(DIR)/$(RUN)_out_dir/ && \
 	$(TRINDIR)/Inchworm/bin/inchworm --kmers jellyfish.kmers.fa --run_inchworm -K $(KMER_SIZE) -L $(KMER_SIZE) --monitor 1 \
 	--DS --keep_tmp_files --num_threads $(IWORM_CPU) --PARALLEL_IWORM  > $(DIR)/$(RUN)_out_dir/inchworm.K25.L25.DS.fa.tmp 2>/dev/null
@@ -122,11 +127,11 @@ $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds:$(DIR)/$(RUN)_out_dir/partitioned_r
 	--trinity_complete > $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
 
 $(DIR)/$(RUN)_out_dir/Trinity.fasta:$(DIR)/$(RUN)_out_dir/recursive_trinity.cmds
-	@echo '\n\n'
+	@echo -e '\n\n'
 	@echo --------------------------------------------------------------------------------
 	@echo ------------ Trinity Phase 2: Assembling Clusters of Reads ---------------------
 	@echo --------------------------------------------------------------------------------
-	@echo '\n\n'
+	@echo -e '\n\n'
 	$(TRINDIR)/trinity-plugins/parafly/bin/ParaFly -c $(DIR)/$(RUN)_out_dir/recursive_trinity.cmds -CPU $(CPU) -v
 	find read_partitions/  -name '*inity.fasta'  | $(TRINDIR)/util/support_scripts/partitioned_trinity_aggregator.pl TRINITY_DN > $(DIR)/$(RUN)_out_dir/Trinity.fasta
 
