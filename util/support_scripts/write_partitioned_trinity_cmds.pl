@@ -71,7 +71,7 @@ while (<$fh>) {
     
     my $file = pop @x;
     
-    my $cmd = "Trinity_recursive.mk inchworm2 READ1=$file RUN=$file.out CPU=1 ";
+    my $cmd = "Trinity_recursive.mk step2 REC_READ=$file REC_RUN=$file.out CPU=1 ";
     
     print "$cmd\n";
 }
