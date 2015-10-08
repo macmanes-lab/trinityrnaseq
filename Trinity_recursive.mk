@@ -47,7 +47,7 @@ qgraph:$(REC_RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out
 $(REC_RUN)/inchworm.K25.L25.DS.fa:
 	mkdir -p $(REC_RUN) && \
 	$(TRINDIR)/Inchworm/bin/inchworm --reads $(REC_READ) \
-	--run_inchworm -K $(KMER_SIZE) -L $(KMER_SIZE) --monitor 1 \
+	--run_inchworm -K $(KMER_SIZE) -L $(MIN_LEN) --monitor 1 \
 	--DS --num_threads 1 --PARALLEL_IWORM  > $(REC_RUN)/inchworm.K25.L25.DS.fa
 
 
