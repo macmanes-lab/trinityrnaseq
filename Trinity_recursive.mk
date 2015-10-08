@@ -46,10 +46,10 @@ qgraph:$(RUN)/chrysalis/Component_bins/Cbin0/c0.graph.out
 
 
 $(RUN)/inchworm.K25.L25.DS.fa:
-	mkdir -p $(RUN) && cd $(RUN) && \
+	mkdir -p $(RUN) && \
 	$(TRINDIR)/Inchworm/bin/inchworm --reads $(READ1) \
 	--run_inchworm -K $(KMER_SIZE) -L $(KMER_SIZE) --monitor 1 \
-	--DS --num_threads 1 --PARALLEL_IWORM  > $(RUN)/inchworm.K25.L25.DS.fa 2>/dev/null
+	--DS --num_threads 1 --PARALLEL_IWORM  > $(RUN)/inchworm.K25.L25.DS.fa
 
 
 $(RUN)/chrysalis/GraphFromIwormFasta.out:
