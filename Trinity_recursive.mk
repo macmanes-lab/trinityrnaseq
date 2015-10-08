@@ -102,6 +102,6 @@ bfly:
 	-C $(RUN)/chrysalis/Component_bins/Cbin0/c0.graph
 
 concatenate:
-	$(TRINDIR)/util/support_scripts/print_butterfly_assemblies.pl $(RUN)/chrysalis/component_base_listing.txt >> Trinity.fasta
-
+	$(TRINDIR)/util/support_scripts/print_butterfly_assemblies.pl $(RUN)/chrysalis/component_base_listing.txt >> $(RUN)/Trinity.fasta
+	find $(RUN)  -name '*inity.fasta'  | $(TRINDIR)/util/support_scripts/partitioned_trinity_aggregator.pl TRINITY_DN >> $(RUN)/../../../Trinity.fasta
 
